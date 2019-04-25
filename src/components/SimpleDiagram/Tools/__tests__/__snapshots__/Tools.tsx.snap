@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TabA tools 1`] = `
+<div
+  className="jspr-tools"
+>
+  <h4>
+    Simple Diagram Tools
+  </h4>
+</div>
+`;
