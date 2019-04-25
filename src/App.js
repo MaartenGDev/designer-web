@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import xmlParser from './parsers/modelParser';
 import { MdKeyboardArrowRight } from 'react-icons/md'
+import Diagram from './components/Diagram';
 
 class App extends Component {
   state = {
@@ -59,26 +60,7 @@ class App extends Component {
 
 
           <div className="px-6 mt-12">
-            {model.entities.map(entity => {
-              return <div className='bg-white mb-6'>
-                <div className="p-4 border-b border-grey-lighter font-bold text-grey-darker">
-                  <span>{entity.name}</span>
-                </div>
-                <div className='p-4 bg-white'>
-                  <ul>
-                    {entity.attributeIds.map(attributeId => {
-                      return <li>{model.attributes[attributeId].name}</li>;
-                    })}
-                  </ul>
-
-                  <div className='mt-6'>
-                  {model.relations.filter(x => x.from === entity.id).map(relation => {
-                    return <span className='inline-block bg-grey-lighter rounded-full px-3 py-1 text-sm font-semibold text-grey-darker mr-2 mb-2'>{model.entities.find(x => x.id === relation.from).name}<MdKeyboardArrowRight size='1.5em' className='align-middle'/>{model.entities.find(x => x.id === relation.to).name}<i>({relation.name})</i></span>
-                  })}
-                  </div>
-                </div>
-              </div>;
-            })}
+            {model.entities.length > 0 ? <Diagram model={model}/> : <p>No data</p>}
           </div>
         </div>
       </div>
