@@ -59,7 +59,7 @@ class App extends Component {
           </div>
 
 
-          <div className="px-6 mt-12">
+          <div id="diagram-window" className="px-6 mt-12 flex-grow">
             {model.entities.length > 0 ? <Diagram model={model}/> : <p>No data</p>}
           </div>
         </div>

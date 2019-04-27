@@ -9,22 +9,13 @@ class Diagram extends Component {
   componentDidMount () {
     const {model} = this.props;
 
+
+
+
     jsPlumb.ready(function () {
-
-      var sourceAnchors = [
-          [0.2, 0, 0, -1, 0, 0, 'foo'],
-          [1, 0.2, 1, 0, 0, 0, 'bar'],
-          [0.8, 1, 0, 1, 0, 0, 'baz'],
-          [0, 0.8, -1, 0, 0, 0, 'qux']
-        ],
-        targetAnchors = [
-          [0.6, 0, 0, -1],
-          [1, 0.6, 1, 0],
-          [0.4, 1, 0, 1],
-          [0, 0.4, -1, 0]
-        ],
-
-        exampleColor = '#00f',
+      var sourceAnchors = [],
+        targetAnchors = [],
+        lineColor = '#30364c',
         exampleDropOptions = {
           tolerance: 'touch',
           hoverClass: 'dropHover',
@@ -32,24 +23,38 @@ class Diagram extends Component {
         },
         connector = ['Bezier', {cssClass: 'connectorClass', hoverClass: 'connectorHoverClass'}],
         connectorStyle = {
-          gradient: {
-            stops: [
-              [0, exampleColor],
-              [0.5, '#09098e'],
-              [1, exampleColor]
-            ]
-          },
-          strokeWidth: 5,
-          stroke: exampleColor
+          strokeWidth: 3,
+          stroke: lineColor
         },
         hoverStyle = {
           stroke: '#449999'
         },
         overlays = [
-          ['Diamond', {fill: '#09098e', width: 15, length: 15}]
+          ["Custom", {
+            create:function(component) {
+              const elem = document.createElement('div');
+              elem.classList.add('tag');
+              elem.classList.add('z-10');
+              elem.innerHTML = '<p>1..1</p>';
+              return elem;
+            },
+            location:0.1,
+            id:"customOverlay"
+          }],
+          ["Custom", {
+            create:function(component) {
+              const elem = document.createElement('div');
+              elem.classList.add('tag');
+              elem.classList.add('z-10');
+              elem.innerHTML = '<p>1..*</p>';
+              return elem;
+            },
+            location:0.9,
+            id:"customOverlay2"
+          }]
         ],
         endpoint = ['Dot', {cssClass: 'endpointClass', radius: 10, hoverClass: 'endpointHoverClass'}],
-        endpointStyle = {fill: exampleColor},
+        endpointStyle = {fill: lineColor},
         anEndpoint = {
           endpoint: endpoint,
           paintStyle: endpointStyle,
@@ -64,23 +69,20 @@ class Diagram extends Component {
         };
 
       var instance = jsPlumb.getInstance({
-        DragOptions: {cursor: 'pointer', zIndex: 2000},
+        DragOptions: {cursor: 'pointer', zIndex: 1},
         Container: 'canvas'
       });
 
       // suspend drawing and initialise.
       instance.batch(function () {
         const connections = model.relations.reduce((acc, cur) => {
+          if (!acc.hasOwnProperty(cur.from)) {
+            acc[cur.from] = [];
+          }
 
-          const connectedRelations = model.relations.filter(x => x.to === cur.from).map(x => x.from);
-          if (connectedRelations.length === 0) return acc;
-
-          acc[cur.from] = connectedRelations;
+          acc[cur.from] = [...acc[cur.from], cur.to];
           return acc;
         }, {});
-
-
-        console.log(connections)
 
         var endpoints = {};
         // ask jsPlumb for a selector for the window class
@@ -126,12 +128,59 @@ class Diagram extends Component {
     });
   }
 
+  calculateScalingFactors(model){
+    const diagramWindow = document.querySelector('#diagram-window');
+
+    const canvasWidth = diagramWindow.clientWidth;
+    const canvasHeight = diagramWindow.clientHeight;
+
+    const leftX = Math.min(...model.entities.map(entity => entity.location.topLeft.x));
+    const rightX = Math.max(...model.entities.map(entity => entity.location.bottomRight.x));
+
+    const topY = Math.max(...model.entities.map(entity => entity.location.topLeft.y));
+    const bottomY = Math.min(...model.entities.map(entity => entity.location.bottomRight.y));
+
+    const importedWidth = leftX < 0
+      ? (leftX * -1 + rightX)
+      : rightX - leftX;
+
+    const importedHeight = bottomY < 0
+      ? (bottomY * -1 + topY)
+      : topY - bottomY;
+
+    return [canvasWidth / importedWidth, canvasHeight / importedHeight, leftX, topY];
+  }
+
+  calculateOffset(number, isForX, leftX, topY){
+    if(number < 0){
+      if(!isForX){
+        return topY + Math.abs(number);
+      }
+      return number - (isForX ? leftX : topY);
+    }
+
+    if(!isForX){
+      return topY - number;
+    }
+
+    return Math.abs(isForX ? leftX : topY) + number;
+  }
+
   render () {
     const {model} = this.props;
+
+
+    const [widthScaleFactor, heightScaleFactor, leftX, topY] = this.calculateScalingFactors(model);
+
     return (
-      <div id="diagramContainer" className={'dynamic-demo'}>
+      <div id="diagramContainer" className='dynamic-demo relative'>
         {model.entities.map(entity => {
-          return <div className="window" id={entity.id}><strong>{entity.name}</strong><br/><br/></div>
+          return <div className="window" id={entity.id} style={
+            {
+              top: this.calculateOffset(entity.location.topLeft.y, false, leftX,  topY) * heightScaleFactor,
+              left: this.calculateOffset(entity.location.topLeft.x , true, leftX, topY) * widthScaleFactor,
+            }
+          }><strong>{entity.name}</strong><br/><br/></div>;
         })}
       </div>
     );
