@@ -9,13 +9,41 @@ class Diagram extends Component {
   componentDidMount () {
     const {model} = this.props;
 
+    this.loadDiagram(model);
+  }
+
+  buildCardinalityTag(component, model, useFrom){
+    const {sourceId, targetId} = component;
+    const relation = model.relations.find(x => x.from.ref === sourceId && x.to.ref === targetId);
+
+    const elem = document.createElement('div');
+    elem.classList.add('tag', 'z-10');
+    elem.innerHTML = `<p>${useFrom ? relation.from.cardinality : relation.to.cardinality}</p>`;
+    return elem;
+  }
 
 
+  loadDiagram(model){
+    const anchorPoints = [
+      [0.2, 0, 0, 0, 0, 0],
+      [0.5, 0, 0, 0, 0, 0],
+      [0.8, 0, 0, 0, 0, 0],
 
-    jsPlumb.ready(function () {
-      var sourceAnchors = [],
-        targetAnchors = [],
-        lineColor = '#30364c',
+      [0, 0.2, 0, 0, 0, 0],
+      [0, 0.5, 0, 0, 0, 0],
+      [0, 0.8, 0, 0, 0, 0],
+
+      [1, 0.2, 0, 0, 0, 0],
+      [1, 0.5, 0, 0, 0, 0],
+      [1, 0.8, 0, 0, 0, 0],
+
+      [0.2, 1, 0, 0, 0, 0],
+      [0.5, 1, 0, 0, 0, 0],
+      [0.8, 1, 0, 0, 0, 0]
+    ];
+
+    jsPlumb.ready(() => {
+      var lineColor = '#30364c',
         exampleDropOptions = {
           tolerance: 'touch',
           hoverClass: 'dropHover',
@@ -30,30 +58,18 @@ class Diagram extends Component {
           stroke: '#449999'
         },
         overlays = [
-          ["Custom", {
-            create:function(component) {
-              const elem = document.createElement('div');
-              elem.classList.add('tag');
-              elem.classList.add('z-10');
-              elem.innerHTML = '<p>1..1</p>';
-              return elem;
-            },
-            location:0.1,
-            id:"customOverlay"
+          ['Custom', {
+            create: component => this.buildCardinalityTag(component,model, true),
+            location: 0.1,
+            id: 'fromCardinalityOverlay'
           }],
-          ["Custom", {
-            create:function(component) {
-              const elem = document.createElement('div');
-              elem.classList.add('tag');
-              elem.classList.add('z-10');
-              elem.innerHTML = '<p>1..*</p>';
-              return elem;
-            },
-            location:0.9,
-            id:"customOverlay2"
+          ['Custom', {
+            create: component => this.buildCardinalityTag(component,model, false),
+            location: 0.9,
+            id: 'toCardinalityOverlay'
           }]
         ],
-        endpoint = ['Dot', {cssClass: 'endpointClass', radius: 10, hoverClass: 'endpointHoverClass'}],
+        endpoint = ['Dot', {cssClass: 'endpointClass', radius: 5, hoverClass: 'endpointHoverClass'}],
         endpointStyle = {fill: lineColor},
         anEndpoint = {
           endpoint: endpoint,
@@ -73,42 +89,38 @@ class Diagram extends Component {
         Container: 'canvas'
       });
 
-      // suspend drawing and initialise.
       instance.batch(function () {
         const connections = model.relations.reduce((acc, cur) => {
-          if (!acc.hasOwnProperty(cur.from)) {
-            acc[cur.from] = [];
+          if (!acc.hasOwnProperty(cur.from.ref)) {
+            acc[cur.from.ref] = [];
           }
 
-          acc[cur.from] = [...acc[cur.from], cur.to];
+          acc[cur.from.ref] = [...acc[cur.from.ref], cur.to.ref];
           return acc;
         }, {});
 
         var endpoints = {};
         // ask jsPlumb for a selector for the window class
         var divsWithWindowClass = jsPlumb.getSelector('.dynamic-demo .window');
-
         // add endpoints to all of these - one for source, and one for target, configured so they don't sit
         // on top of each other.
         for (var i = 0; i < divsWithWindowClass.length; i++) {
-          var id = instance.getId(divsWithWindowClass[i]);
-          endpoints[id] = [
-            // note the three-arg version of addEndpoint; lets you re-use some common settings easily.
-            instance.addEndpoint(id, anEndpoint, {anchor: sourceAnchors}),
-            instance.addEndpoint(id, anEndpoint, {anchor: targetAnchors})
-          ];
-        }
-        // then connect everything using the connections map declared above.
-        for (var e in endpoints) {
-          if (connections[e]) {
-            for (var j = 0; j < connections[e].length; j++) {
+          var sourceId = instance.getId(divsWithWindowClass[i]);
+
+          if(connections.hasOwnProperty(sourceId)){
+            const connected = connections[sourceId];
+            for(const targetId of connected){
+              const sourceEndpoint = instance.addEndpoint(sourceId, anEndpoint, {anchor: anchorPoints})
+              const targetEndpoint = instance.addEndpoint(targetId, anEndpoint, {anchor: anchorPoints})
+
               instance.connect({
-                source: endpoints[e][0],
-                target: endpoints[connections[e][j]][1]
-              });
+                source: sourceEndpoint,
+                target: targetEndpoint
+              })
             }
           }
         }
+
 
         // bind click listener; delete connections on click
         instance.bind('click', function (conn) {
@@ -128,7 +140,8 @@ class Diagram extends Component {
     });
   }
 
-  calculateScalingFactors(model){
+
+  calculateScalingFactors (model) {
     const diagramWindow = document.querySelector('#diagram-window');
 
     const canvasWidth = diagramWindow.clientWidth;
@@ -151,24 +164,24 @@ class Diagram extends Component {
     return [canvasWidth / importedWidth, canvasHeight / importedHeight, leftX, topY];
   }
 
-  calculateOffset(number, isForX, leftX, topY){
-    if(number < 0){
-      if(!isForX){
-        return topY + Math.abs(number);
-      }
-      return number - (isForX ? leftX : topY);
+  calculateLengthBetweenXCoordinates (number, leftX) {
+    if (number < 0) {
+      return number - leftX;
     }
 
-    if(!isForX){
-      return topY - number;
+    return Math.abs(leftX) + number;
+  }
+
+  calculateLengthBetweenYCoordinates (number, topY) {
+    if (number < 0) {
+      return topY + Math.abs(number);
     }
 
-    return Math.abs(isForX ? leftX : topY) + number;
+    return topY - number;
   }
 
   render () {
     const {model} = this.props;
-
 
     const [widthScaleFactor, heightScaleFactor, leftX, topY] = this.calculateScalingFactors(model);
 
@@ -177,8 +190,8 @@ class Diagram extends Component {
         {model.entities.map(entity => {
           return <div className="window" id={entity.id} style={
             {
-              top: this.calculateOffset(entity.location.topLeft.y, false, leftX,  topY) * heightScaleFactor,
-              left: this.calculateOffset(entity.location.topLeft.x , true, leftX, topY) * widthScaleFactor,
+              top: this.calculateLengthBetweenYCoordinates(entity.location.topLeft.y, topY) * heightScaleFactor,
+              left: this.calculateLengthBetweenXCoordinates(entity.location.topLeft.x, leftX) * widthScaleFactor,
             }
           }><strong>{entity.name}</strong><br/><br/></div>;
         })}

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import xmlParser from './parsers/modelParser';
-import { MdKeyboardArrowRight } from 'react-icons/md'
+import data from './data/schema'
 import Diagram from './components/Diagram';
 
 class App extends Component {
@@ -14,6 +14,10 @@ class App extends Component {
     }
   };
 
+  componentDidMount () {
+    this.handleModelSourceChange();
+  }
+
   toggleModelInput = () => {
     this.setState((state) => ({
       showModelInput: !state.showModelInput
@@ -21,7 +25,7 @@ class App extends Component {
   };
 
   handleModelSourceChange = evt => {
-    xmlParser(evt.target.value, (data) => {
+    xmlParser(data, (data) => {
       this.setState({
         model: data
       });
@@ -34,7 +38,7 @@ class App extends Component {
     return (
       <div className="relative w-full">
         <div
-          className={`bg-black z-10 justify-center items-center absolute w-screen h-screen pin ${showModelInput ? 'flex' : 'hidden'}`}>
+          className={`bg-black z-20 justify-center items-center absolute w-screen h-screen pin ${showModelInput ? 'flex' : 'hidden'}`}>
           <div className='w-1/2 bg-white flex flex-col' style={{height: 'calc(100vh - 60px)'}}>
             <div
               className='p-4 border-b border-grey-lighter font-bold text-grey-darker flex justify-between items-center'>

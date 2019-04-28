@@ -27,8 +27,14 @@ const getAsJson = (model) => {
   const relations = model['Model']['o:RootObject'][0]['c:Children'][0]['o:Model'][0]['c:Relationships'][0]['o:Relationship'].map(relation => ({
     id: relation['$'].Id,
     name: relation['a:Name'][0],
-    from: relation['c:Object1'][0]['o:Entity'][0]['$'].Ref,
-    to: relation['c:Object2'][0]['o:Entity'][0]['$'].Ref
+    from: {
+      ref: relation['c:Object1'][0]['o:Entity'][0]['$'].Ref,
+      cardinality: relation['a:Entity1ToEntity2RoleCardinality'][0]
+    },
+    to: {
+      ref: relation['c:Object2'][0]['o:Entity'][0]['$'].Ref,
+      cardinality: relation['a:Entity2ToEntity1RoleCardinality'][0]
+    },
   }));
 
   return {
