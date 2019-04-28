@@ -6114,12 +6114,6 @@ table {
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, .12), 0 2px 4px 0 rgba(0, 0, 0, .08);
 }
 
-/** ELEMENTS **/
-
-.dynamic-demo .window {
-  padding: .5em;
-}
-
 .jtk-connector {
   z-index: 4;
 }
@@ -6128,39 +6122,14 @@ table {
   z-index: 5;
 }
 
-.window {
-  z-index: 6;
-  background-color: white;
-  border: 1px solid #346789;
-  border-radius: .5em;
-  position: absolute;
-  cursor: pointer;
-          box-shadow: 2px 2px 19px #aaa;
-       -o-box-shadow: 2px 2px 19px #aaa;
-  -webkit-box-shadow: 2px 2px 19px #aaa;
-     -moz-box-shadow: 2px 2px 19px #aaa;
-  -webkit-transition: -webkit-box-shadow .15s ease-in;
-     -moz-transition: -moz-box-shadow .15s ease-in;
-       -o-transition: -o-box-shadow .15s ease-in;
-          transition: box-shadow .15s ease-in;
-}
-
-.window:hover {
-  border: 1px solid #123456;
-          box-shadow: 2px 2px 19px #444;
-       -o-box-shadow: 2px 2px 19px #444;
-  -webkit-box-shadow: 2px 2px 19px #444;
-     -moz-box-shadow: 2px 2px 19px #fff;
-  opacity: .9;
-}
-
-.window a {
-  font-family: helvetica, sans-serif;
-}
-
 path,
 .jtk-endpoint {
   cursor: pointer;
+}
+
+.primary-identifier-row > td {
+  text-decoration: underline;
+  font-weight: bold;
 }
 
 @media (min-width: 576px) {
