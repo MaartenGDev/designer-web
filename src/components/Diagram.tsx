@@ -1,10 +1,13 @@
 import React, {Component} from 'react';
-import {Connection, Endpoint, jsPlumb, jsPlumbInstance} from 'jsplumb';
+import {Connection, jsPlumb} from 'jsplumb';
 import IModel from "../models/IModel";
 import EndpointFactory from "../helpers/EndpointFactory";
+import {SelectedDataType} from "../models/SelectedDataType";
+import IEntity from "../models/IEntity";
 
 interface IProps {
-    model: IModel
+    model: IModel,
+    onModelSelectionChange: (type: SelectedDataType, selectedData: IEntity | undefined) => void
 }
 
 interface IState {
@@ -41,6 +44,9 @@ class Diagram extends Component<IProps, IState> {
 
     loadDiagram(model: IModel) {
         this.diagram.batch(() => {
+            this.diagram.deleteEveryEndpoint();
+            this.diagram.deleteEveryConnection();
+
             const connections: { [key: string]: string[] } = model.relations.reduce((acc: { [key: string]: string[] }, cur) => {
                 if (!acc.hasOwnProperty(cur.from.ref)) {
                     acc[cur.from.ref] = [];
@@ -58,12 +64,10 @@ class Diagram extends Component<IProps, IState> {
                 if (connections.hasOwnProperty(sourceId)) {
                     const connected = connections[sourceId];
                     for (const targetId of connected) {
-                        const sourceEndpoint: Endpoint = this.diagram.addEndpoint(sourceId, EndpointFactory.create(model), {anchor: EndpointFactory.getAnchorPoints()});
-                        const targetEndpoint: Endpoint = this.diagram.addEndpoint(targetId, EndpointFactory.create(model), {anchor: EndpointFactory.getAnchorPoints()});
 
                         this.diagram.connect({
-                            source: sourceEndpoint,
-                            target: targetEndpoint
+                            source: this.diagram.addEndpoint(sourceId, EndpointFactory.create(model), {anchor: EndpointFactory.getAnchorPoints()}),
+                            target: this.diagram.addEndpoint(targetId, EndpointFactory.create(model), {anchor: EndpointFactory.getAnchorPoints()})
                         });
                     }
                 }
@@ -121,23 +125,24 @@ class Diagram extends Component<IProps, IState> {
     }
 
     render() {
-        const {model} = this.props;
+        const {model, onModelSelectionChange} = this.props;
 
         const [widthScaleFactor, heightScaleFactor, leftX, topY] = this.calculateScalingFactors(model);
 
         return (
             <div id="diagramContainer" className='editor relative'>
                 {model.entities.map(entity => {
-                    return <div className="entity absolute bg-white shadow-md" id={entity.id} style={
-                        {
-                            top: this.calculateLengthBetweenYCoordinates(entity.location.topLeft.y, topY) * heightScaleFactor,
-                            left: this.calculateLengthBetweenXCoordinates(entity.location.topLeft.x, leftX) * widthScaleFactor,
-                        }
-                    }>
-                        <div className='p-2 border-b border-grey-lighter font-bold text-grey-darker'>
+                    return <div className="entity absolute bg-white shadow" id={entity.id} style={{
+                        top: this.calculateLengthBetweenYCoordinates(entity.location.topLeft.y, topY) * heightScaleFactor,
+                        left: this.calculateLengthBetweenXCoordinates(entity.location.topLeft.x, leftX) * widthScaleFactor,
+                    }} onClick={e => {
+                        e.stopPropagation();
+                        onModelSelectionChange(SelectedDataType.ENTITY, entity)
+                    }}>
+                        <div className='p-4 border-b border-grey-lighter font-bold text-grey-darker'>
                             <p>{entity.name}</p>
                         </div>
-                        <div className='p-2'>
+                        <div className='p-4'>
                             <table className='text-sm'>
                                 <tbody>
                                 {entity.attributeIds.map(attributeId => {

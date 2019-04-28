@@ -1,16 +1,22 @@
 import * as React from 'react';
+import {Component} from 'react';
 import xmlParser from './parsers/modelParser';
 import data from './data/schema'
 import IModel from "./models/IModel";
-import {Component} from "react";
 import Diagram from "./components/Diagram";
+import {SelectedDataType} from "./models/SelectedDataType";
+import IEntity from "./models/IEntity";
+import EntityEditor from "./components/editors/EntityEditor";
 
-interface IProps {}
+interface IProps {
+}
 
 interface IState {
     showModelInput: boolean,
     modelXml: string,
-    model: IModel
+    model: IModel,
+    editableData: IEntity | undefined,
+    selectedDataType: SelectedDataType | undefined
 }
 
 class App extends Component<IProps, IState> {
@@ -22,7 +28,9 @@ class App extends Component<IProps, IState> {
             attributes: {},
             relations: [],
             domains: {}
-        }
+        },
+        editableData: undefined,
+        selectedDataType: undefined
     };
 
     componentDidMount() {
@@ -43,24 +51,37 @@ class App extends Component<IProps, IState> {
         });
     };
 
+    handleModelSelectionChange = (selectedDataType: SelectedDataType, editableData: IEntity | undefined) => {
+        console.log('oeff')
+        this.setState({
+            editableData,
+            selectedDataType
+        });
+    };
+
     render() {
-        const {showModelInput, model} = this.state;
+        const {showModelInput, model, editableData, selectedDataType} = this.state;
 
         return (
             <div className="relative w-full">
-                <div
-                    className={`bg-black z-20 justify-center items-center absolute w-screen h-screen pin ${showModelInput ? 'flex' : 'hidden'}`}>
+                <div className={`bg-black z-20 justify-center items-center absolute w-screen h-screen pin ${showModelInput ? 'flex' : 'hidden'}`}>
                     <div className='w-1/2 bg-white flex flex-col' style={{height: 'calc(100vh - 60px)'}}>
                         <div
                             className='p-4 border-b border-grey-lighter font-bold text-grey-darker flex justify-between items-center'>
                             <span className='text-xl'>Model</span>
                             <button onClick={this.toggleModelInput}>Close</button>
                         </div>
-                        <textarea className='w-full flex-grow' onChange={this.handleModelSourceChange}>
-
-            </textarea>
+                        <textarea className='w-full flex-grow' onChange={this.handleModelSourceChange} />
                     </div>
                 </div>
+                {editableData !== undefined && <div className='fixed pin-b pin-r mr-6 bg-white z-20 shadow-lg'>
+                    <div className='p-2 border-b border-grey-lighter font-bold text-grey-darker'>
+                        <p>Edit Entity</p>
+                    </div>
+                    <div className='p-2'>
+                        {selectedDataType === SelectedDataType.ENTITY && <EntityEditor model={model} entity={editableData}/>}
+                    </div>
+                </div>}
 
                 <div
                     style={{backgroundColor: '#f7f7f7'}}
@@ -74,9 +95,8 @@ class App extends Component<IProps, IState> {
                         </div>
                     </div>
 
-
-                    <div id="diagram-window" className="px-6 mt-12 flex-grow">
-                        {model.entities.length > 0 ? <Diagram model={model}/> : <p>No data</p>}
+                    <div id="diagram-window" className="px-6 mt-12 flex-grow"  onClick={_ => this.handleModelSelectionChange(SelectedDataType.NONE, undefined)}>
+                        {model.entities.length > 0 ? <Diagram model={model} onModelSelectionChange={this.handleModelSelectionChange}/> : <p>No data</p>}
                     </div>
                 </div>
             </div>

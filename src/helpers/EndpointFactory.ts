@@ -1,5 +1,4 @@
 import IModel from "../models/IModel";
-import {EndpointOptions} from "jsplumb";
 
 class EndpointFactory {
     static getAnchorPoints() {
