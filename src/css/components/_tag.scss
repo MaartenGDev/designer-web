@@ -1,7 +1,3 @@
 .tag{
   @apply .inline-block .bg-grey-lighter .rounded-full .px-3 .py-1 .text-sm .font-semibold .text-grey-darker .mr-2 .mb-2 .shadow-md;
-
-  &:first-letter{
-    text-transform: capitalize;
-  }
 }

@@ -1,20 +1,31 @@
 import React, { Component } from 'react';
-import { jsPlumb } from 'jsplumb';
+import {Connection, Endpoint, jsPlumb} from 'jsplumb';
+import IModel from "../models/IModel";
 
-const confirm = (data) => {
+interface IProps {
+  model: IModel
+}
+
+interface IState {}
+
+const confirm = (data: any) => {
   return true;
 };
 
-class Diagram extends Component {
+class Diagram extends Component<IProps, IState> {
   componentDidMount () {
     const {model} = this.props;
 
     this.loadDiagram(model);
   }
 
-  buildCardinalityTag(component, model, useFrom){
+  buildCardinalityTag (component: any, model: IModel, useFrom: boolean) {
     const {sourceId, targetId} = component;
     const relation = model.relations.find(x => x.from.ref === sourceId && x.to.ref === targetId);
+
+    if(relation === undefined){
+      return null;
+    }
 
     const elem = document.createElement('div');
     elem.classList.add('tag', 'z-10');
@@ -22,8 +33,7 @@ class Diagram extends Component {
     return elem;
   }
 
-
-  loadDiagram(model){
+  loadDiagram (model: IModel) {
     const anchorPoints = [
       [0.2, 0, 0, 0, 0, 0],
       [0.5, 0, 0, 0, 0, 0],
@@ -42,7 +52,7 @@ class Diagram extends Component {
       [0.8, 1, 0, 0, 0, 0]
     ];
 
-    jsPlumb.ready(() => {
+    (jsPlumb as any).ready(() => {
       var lineColor = '#30364c',
         exampleDropOptions = {
           tolerance: 'touch',
@@ -59,12 +69,12 @@ class Diagram extends Component {
         },
         overlays = [
           ['Custom', {
-            create: component => this.buildCardinalityTag(component,model, true),
+            create: (component: any) => this.buildCardinalityTag(component, model, true),
             location: 0.1,
             id: 'fromCardinalityOverlay'
           }],
           ['Custom', {
-            create: component => this.buildCardinalityTag(component,model, false),
+            create: (component: any) => this.buildCardinalityTag(component, model, false),
             location: 0.9,
             id: 'toCardinalityOverlay'
           }]
@@ -84,13 +94,13 @@ class Diagram extends Component {
           connectorOverlays: overlays
         };
 
-      var instance = jsPlumb.getInstance({
+      const instance: any = jsPlumb.getInstance({
         DragOptions: {cursor: 'pointer', zIndex: 1},
         Container: 'canvas'
       });
 
-      instance.batch(function () {
-        const connections = model.relations.reduce((acc, cur) => {
+      instance.batch(() => {
+        const connections: {[key: string]: string[]} = model.relations.reduce((acc: {[key: string]: string[]}, cur) => {
           if (!acc.hasOwnProperty(cur.from.ref)) {
             acc[cur.from.ref] = [];
           }
@@ -99,50 +109,45 @@ class Diagram extends Component {
           return acc;
         }, {});
 
-        var endpoints = {};
-        // ask jsPlumb for a selector for the window class
-        var divsWithWindowClass = jsPlumb.getSelector('.dynamic-demo .window');
-        // add endpoints to all of these - one for source, and one for target, configured so they don't sit
-        // on top of each other.
-        for (var i = 0; i < divsWithWindowClass.length; i++) {
-          var sourceId = instance.getId(divsWithWindowClass[i]);
+        const divsWithWindowClass = document.querySelectorAll('.dynamic-demo .window');
 
-          if(connections.hasOwnProperty(sourceId)){
+        for (var i = 0; i < divsWithWindowClass.length; i++) {
+          var sourceId = divsWithWindowClass[i].id;
+
+          if (connections.hasOwnProperty(sourceId)) {
             const connected = connections[sourceId];
-            for(const targetId of connected){
-              const sourceEndpoint = instance.addEndpoint(sourceId, anEndpoint, {anchor: anchorPoints})
-              const targetEndpoint = instance.addEndpoint(targetId, anEndpoint, {anchor: anchorPoints})
+            for (const targetId of connected) {
+              const sourceEndpoint: Endpoint = instance.addEndpoint(sourceId, anEndpoint, {anchor: anchorPoints});
+              const targetEndpoint: Endpoint = instance.addEndpoint(targetId, anEndpoint, {anchor: anchorPoints});
 
               instance.connect({
                 source: sourceEndpoint,
                 target: targetEndpoint
-              })
+              });
             }
           }
         }
 
-
         // bind click listener; delete connections on click
-        instance.bind('click', function (conn) {
+        instance.bind('click', function (conn: Connection) {
           instance.detach(conn);
         });
 
         // bind beforeDetach interceptor: will be fired when the click handler above calls detach, and the user
         // will be prompted to confirm deletion.
-        instance.bind('beforeDetach', function (conn) {
+        instance.bind('beforeDetach', function (conn: Connection) {
           return confirm('Delete connection?');
         });
 
         instance.draggable(divsWithWindowClass);
 
-        jsPlumb.fire('jsPlumbDemoLoaded', instance);
+        (jsPlumb as any).fire('jsPlumbDemoLoaded', instance);
       });
     });
   }
 
-
-  calculateScalingFactors (model) {
-    const diagramWindow = document.querySelector('#diagram-window');
+  calculateScalingFactors (model: IModel) {
+    const diagramWindow = document.querySelector('#diagram-window')!;
 
     const canvasWidth = diagramWindow.clientWidth;
     const canvasHeight = diagramWindow.clientHeight;
@@ -164,7 +169,7 @@ class Diagram extends Component {
     return [canvasWidth / importedWidth, canvasHeight / importedHeight, leftX, topY];
   }
 
-  calculateLengthBetweenXCoordinates (number, leftX) {
+  calculateLengthBetweenXCoordinates (number: number, leftX: number) {
     if (number < 0) {
       return number - leftX;
     }
@@ -172,7 +177,7 @@ class Diagram extends Component {
     return Math.abs(leftX) + number;
   }
 
-  calculateLengthBetweenYCoordinates (number, topY) {
+  calculateLengthBetweenYCoordinates (number: number, topY: number) {
     if (number < 0) {
       return topY + Math.abs(number);
     }
@@ -193,7 +198,14 @@ class Diagram extends Component {
               top: this.calculateLengthBetweenYCoordinates(entity.location.topLeft.y, topY) * heightScaleFactor,
               left: this.calculateLengthBetweenXCoordinates(entity.location.topLeft.x, leftX) * widthScaleFactor,
             }
-          }><strong>{entity.name}</strong><br/><br/></div>;
+          }>
+            <p>{entity.name}</p>
+            <table className='text-sm'>
+              {entity.attributeIds.map(attributeId => {
+                return <tr><td>{model.attributes[attributeId].name}</td><td>PK</td><td>DOMAIN</td></tr>
+              })}
+            </table>
+          </div>;
         })}
       </div>
     );

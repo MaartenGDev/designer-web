@@ -6112,20 +6112,11 @@ table {
   margin-right: .5rem;
   margin-bottom: .5rem;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, .12), 0 2px 4px 0 rgba(0, 0, 0, .08);
-
-  &:first-letter {
-    text-transform: capitalize;
-  }
 }
 
 /** ELEMENTS **/
 
 .dynamic-demo .window {
-  width: 5em;
-  height: 5em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: .5em;
 }
 
