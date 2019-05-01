@@ -7,6 +7,7 @@ import Diagram from "./components/Diagram";
 import {SelectedDataType} from "./models/SelectedDataType";
 import IEntity from "./models/IEntity";
 import EntityEditor from "./components/editors/EntityEditor";
+import { MdClose } from 'react-icons/md'
 
 interface IProps {
 }
@@ -64,23 +65,29 @@ class App extends Component<IProps, IState> {
 
         return (
             <div className="relative w-full">
-                <div className={`bg-black z-20 justify-center items-center absolute w-screen h-screen pin ${showModelInput ? 'flex' : 'hidden'}`}>
+                <div
+                    className={`bg-black z-20 justify-center items-center absolute w-screen h-screen pin ${showModelInput ? 'flex' : 'hidden'}`}>
                     <div className='w-1/2 bg-white flex flex-col' style={{height: 'calc(100vh - 60px)'}}>
                         <div
                             className='p-4 border-b border-grey-lighter font-bold text-grey-darker flex justify-between items-center'>
                             <span className='text-xl'>Model</span>
                             <button onClick={this.toggleModelInput}>Close</button>
                         </div>
-                        <textarea className='w-full flex-grow' onChange={this.handleModelSourceChange} />
+                        <textarea className='w-full flex-grow' onChange={this.handleModelSourceChange}/>
                     </div>
                 </div>
                 {editableData !== undefined && <div className='fixed pin-b pin-r mr-6 bg-white z-20 shadow-lg'>
-                    <div className='p-2 border-b border-grey-lighter font-bold text-grey-darker'>
-                        <p>Edit Entity</p>
-                    </div>
-                    <div className='p-2'>
-                        {selectedDataType === SelectedDataType.ENTITY && <EntityEditor model={model} entity={editableData}/>}
-                    </div>
+                  <div className='flex justify-between border-b border-grey-lighter p-4 mb-2'>
+                    <p
+                      className='uppercase tracking-wide text-grey-darker text-base font-bold'>
+                      Edit Entity
+                    </p>
+                    <MdClose onClick={_ => this.handleModelSelectionChange(SelectedDataType.NONE, undefined)}/>
+                  </div>
+                  <div className='p-2'>
+                      {selectedDataType === SelectedDataType.ENTITY &&
+                      <EntityEditor model={model} entity={editableData}/>}
+                  </div>
                 </div>}
 
                 <div
@@ -95,8 +102,11 @@ class App extends Component<IProps, IState> {
                         </div>
                     </div>
 
-                    <div id="diagram-window" className="px-6 mt-12 flex-grow"  onClick={_ => this.handleModelSelectionChange(SelectedDataType.NONE, undefined)}>
-                        {model.entities.length > 0 ? <Diagram model={model} onModelSelectionChange={this.handleModelSelectionChange}/> : <p>No data</p>}
+                    <div id="diagram-window" className="px-6 mt-12 flex-grow"
+                         onClick={_ => this.handleModelSelectionChange(SelectedDataType.NONE, undefined)}>
+                        {model.entities.length > 0
+                            ? <Diagram model={model} onModelSelectionChange={this.handleModelSelectionChange}/>
+                            : <p>No data</p>}
                     </div>
                 </div>
             </div>

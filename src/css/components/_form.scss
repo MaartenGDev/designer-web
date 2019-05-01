@@ -1,0 +1,13 @@
+.form{
+  &__label{
+    @apply .block .uppercase .tracking-wide .text-grey-darker .text-xs .font-bold .mb-2;
+  }
+
+  &__input{
+    @apply .appearance-none .block .w-full .bg-grey-lighter .text-grey-darker .border .border-grey-lighter .rounded .py-2 .px-2 .leading-tight;
+
+    &--select{
+      @apply .pr-6;
+    }
+  }
+}

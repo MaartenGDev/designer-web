@@ -6114,6 +6114,36 @@ table {
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, .12), 0 2px 4px 0 rgba(0, 0, 0, .08);
 }
 
+.form__label {
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: #606f7b;
+    font-size: .75rem;
+    font-weight: 700;
+    margin-bottom: .5rem;
+  }
+
+.form__input {
+    appearance: none;
+    display: block;
+    width: 100%;
+    background-color: #f1f5f8;
+    color: #606f7b;
+    border-width: 1px;
+    border-color: #f1f5f8;
+    border-radius: .25rem;
+    padding-top: .5rem;
+    padding-bottom: .5rem;
+    padding-left: .5rem;
+    padding-right: .5rem;
+    line-height: 1.25;
+  }
+
+.form__input--select {
+      padding-right: 1.5rem;
+    }
+
 .jtk-connector {
   z-index: 4;
 }
