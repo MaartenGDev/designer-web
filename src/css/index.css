@@ -6144,6 +6144,21 @@ table {
       padding-right: 1.5rem;
     }
 
+.table__header {
+    font-size: .875rem;
+    font-weight: 600;
+    color: #606f7b;
+    padding: .5rem;
+    background-color: #f8fafc;
+  }
+
+.table__cell {
+    padding: .5rem;
+    border-top-width: 1px;
+    border-color: #dae1e7;
+    font-size: .75rem;
+  }
+
 .jtk-connector {
   z-index: 4;
 }

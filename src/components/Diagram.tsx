@@ -3,11 +3,10 @@ import {Connection, jsPlumb} from 'jsplumb';
 import IModel from "../models/IModel";
 import EndpointFactory from "../helpers/EndpointFactory";
 import {SelectedDataType} from "../models/SelectedDataType";
-import IEntity from "../models/IEntity";
 
 interface IProps {
     model: IModel,
-    onModelSelectionChange: (type: SelectedDataType, selectedData: IEntity | undefined) => void
+    onModelSelectionChange: (selectedDataType: SelectedDataType, selectedId: string | undefined) => void
 }
 
 interface IState {
@@ -137,7 +136,7 @@ class Diagram extends Component<IProps, IState> {
                         left: this.calculateLengthBetweenXCoordinates(entity.location.topLeft.x, leftX) * widthScaleFactor,
                     }} onClick={e => {
                         e.stopPropagation();
-                        onModelSelectionChange(SelectedDataType.ENTITY, entity)
+                        onModelSelectionChange(SelectedDataType.ENTITY, entity.id)
                     }}>
                         <div className='p-4 border-b border-grey-lighter font-bold text-grey-darker'>
                             <p>{entity.name}</p>

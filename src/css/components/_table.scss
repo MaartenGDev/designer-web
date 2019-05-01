@@ -1,0 +1,9 @@
+.table {
+  &__header{
+    @apply .text-sm .font-semibold .text-grey-darker .p-2 .bg-grey-lightest;
+  }
+
+  &__cell{
+    @apply .p-2 .border-t .border-grey-light .text-xs;
+  }
+}

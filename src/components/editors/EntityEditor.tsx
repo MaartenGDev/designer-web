@@ -5,7 +5,8 @@ import ShowIfTrue from "../common/ShowIfTrue";
 
 interface IProps {
     entity: IEntity,
-    model: IModel
+    model: IModel,
+    onEntityChange: (entityId: string, attributeName: string, value: any) => void
 }
 
 interface IState {
@@ -72,7 +73,7 @@ class EntityEditor extends Component<IProps, IState> {
     };
 
     render() {
-        const {entity, model} = this.props;
+        const {entity, model, onEntityChange} = this.props;
         const dataTypeSourceByAttributeId: { [key: string]: DataTypeSourceType } = this.state.dataTypeSourceByAttributeId;
 
         const domainOptions = Object.values(model.domains).map(domain => ({
@@ -88,7 +89,7 @@ class EntityEditor extends Component<IProps, IState> {
                     </label>
                     <input
                         className="form__input focus:outline-none focus:bg-white focus:border-grey text-sm"
-                        id="form-input-name" type="text" placeholder="" value={entity.name}/>
+                        id="form-input-name" type="text" placeholder="" value={entity.name} onChange={e => onEntityChange(entity.id, 'a:Name', e.target.value)} />
                 </div>
                 <div className="w-full mt-6">
                     <label className="form__label" htmlFor="form-input-name">
@@ -98,18 +99,18 @@ class EntityEditor extends Component<IProps, IState> {
                     <table className='w-full text-left table-collapse'>
                         <tbody className='align-baseline'>
                         <tr>
-                            <th className='text-sm font-semibold text-grey-darker p-2 bg-grey-lightest'>Name</th>
-                            <th className='text-sm font-semibold text-grey-darker p-2 bg-grey-lightest'>Type source</th>
-                            <th className='text-sm font-semibold text-grey-darker p-2 bg-grey-lightest'>Data type</th>
-                            <th className='text-sm font-semibold text-grey-darker p-2 bg-grey-lightest'>Length</th>
-                            <th className='text-sm font-semibold text-grey-darker p-2 bg-grey-lightest'>Identifier</th>
+                            <th className='table__header'>Name</th>
+                            <th className='table__header'>Type source</th>
+                            <th className='table__header'>Data type</th>
+                            <th className='table__header'>Length</th>
+                            <th className='table__header'>Identifier</th>
                         </tr>
                         {entity.attributeIds.map(attributeId => {
                             const isPrimaryIdentifier = model.attributes[attributeId].domainId !== undefined && model.domains[model.attributes[attributeId].domainId!].dataType === 'I';
 
                             return <tr key={attributeId}>
-                                <td className='p-2 border-t border-grey-light text-xs'>{model.attributes[attributeId].name}</td>
-                                <td className='p-2 border-t border-grey-light text-xs'>
+                                <td className='table__cell'>{model.attributes[attributeId].name}</td>
+                                <td className='table__cell'>
                                     <select className='form__input form__input--select'
                                             value={dataTypeSourceByAttributeId[attributeId]}
                                             onChange={e => this.handleDataTypeSource(attributeId, e.target.value === DataTypeSourceType.DOMAIN.toString() ? DataTypeSourceType.DOMAIN : DataTypeSourceType.RAW_TYPE)}>
@@ -119,7 +120,7 @@ class EntityEditor extends Component<IProps, IState> {
                                 </td>
                                 <ShowIfTrue
                                     condition={dataTypeSourceByAttributeId[attributeId] === DataTypeSourceType.RAW_TYPE}>
-                                    <td className='p-2 border-t border-grey-light text-xs'>
+                                    <td className='table__cell'>
                                         <select className='form__input form__input--select'>
                                             {Object.keys(dataTypesById).map((type: string) => <option
                                                 selected={type === model.attributes[attributeId].dataType}>{getLabelForDataType(type)}</option>)}
@@ -132,7 +133,7 @@ class EntityEditor extends Component<IProps, IState> {
                                 </ShowIfTrue>
                                 <ShowIfTrue
                                     condition={dataTypeSourceByAttributeId[attributeId] === DataTypeSourceType.DOMAIN}>
-                                    <td className='p-2 border-t border-grey-light text-xs'>
+                                    <td className='table__cell'>
                                         <select className='form__input form__input--select'>
                                             <option selected={model.attributes[attributeId].domainId === undefined}>None
                                             </option>
@@ -140,15 +141,17 @@ class EntityEditor extends Component<IProps, IState> {
                                                 selected={domain.id === model.attributes[attributeId].domainId}>{domain.label}</option>)}
                                         </select>
                                     </td>
-                                    <td className='p-2 border-t border-grey-light text-xs'>
+                                    <td className='table__cell'>
                                         <input type='number'
-                                                                                                   className='form__input'
-                                                                                                   value={model.attributes[attributeId].length}
-                                                                                                   disabled={true}/>
+                                               className='form__input'
+                                               value={model.domains[model.attributes[attributeId].domainId!].length}
+                                               disabled={true}/>
                                     </td>
                                 </ShowIfTrue>
 
-                                <td className='p-2 border-t border-grey-light text-xs'><input type='checkbox' checked={isPrimaryIdentifier}/></td>
+                                <td className='p-2 border-t border-grey-light text-xs'>
+                                    <input type='checkbox' checked={isPrimaryIdentifier}/>
+                                </td>
                             </tr>
                         })}
                         </tbody>

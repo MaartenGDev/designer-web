@@ -5,9 +5,10 @@ import data from './data/schema'
 import IModel from "./models/IModel";
 import Diagram from "./components/Diagram";
 import {SelectedDataType} from "./models/SelectedDataType";
-import IEntity from "./models/IEntity";
 import EntityEditor from "./components/editors/EntityEditor";
-import { MdClose } from 'react-icons/md'
+import {MdClose} from 'react-icons/md'
+import CDMModel from "./parsers/CDMModel";
+import IEntity from "./models/IEntity";
 
 interface IProps {
 }
@@ -16,11 +17,13 @@ interface IState {
     showModelInput: boolean,
     modelXml: string,
     model: IModel,
-    editableData: IEntity | undefined,
-    selectedDataType: SelectedDataType | undefined
+    selectedId: string | undefined,
+    selectedDataType: SelectedDataType
 }
 
 class App extends Component<IProps, IState> {
+    private CDMModel = new CDMModel();
+
     state = {
         showModelInput: false,
         modelXml: '',
@@ -30,12 +33,14 @@ class App extends Component<IProps, IState> {
             relations: [],
             domains: {}
         },
-        editableData: undefined,
-        selectedDataType: undefined
+        selectedId: undefined,
+        selectedDataType: SelectedDataType.NONE
     };
 
     componentDidMount() {
-        this.handleModelSourceChange({target: {value: data}});
+        this.CDMModel.loadFromXml(data);
+
+        this.handleModelSourceChange(data);
     }
 
     toggleModelInput = () => {
@@ -44,39 +49,56 @@ class App extends Component<IProps, IState> {
         }));
     };
 
-    handleModelSourceChange = (evt: any) => {
-        xmlParser(evt.target.value, (data: IModel) => {
+    handleModelSourceChange = (xml: string) => {
+        xmlParser(xml, (data: IModel) => {
+            console.log('got new model!')
+            console.log(data)
             this.setState({
-                model: data
+                model: data,
+                modelXml: xml
             });
         });
     };
 
-    handleModelSelectionChange = (selectedDataType: SelectedDataType, editableData: IEntity | undefined) => {
-        console.log('oeff')
+    handleModelSelectionChange = (selectedDataType: SelectedDataType, selectedId: string | undefined) => {
         this.setState({
-            editableData,
+            selectedId,
             selectedDataType
         });
     };
 
+    private handleEntityChange = (entityId: string, attributeName: string, value: any) => {
+        this.CDMModel.setAttributeForEntity(entityId, attributeName, value);
+        this.handleModelSourceChange(this.CDMModel.getAsXml());
+    };
+
+    private getEditableDataForSelection = (model: IModel, selectedDataType: SelectedDataType, selectedId: string): IEntity | undefined => {
+        if(selectedDataType === SelectedDataType.NONE) return undefined;
+
+        if(selectedDataType === SelectedDataType.ENTITY) return model.entities.find(x => x.id === selectedId);
+
+        return undefined
+    };
+
     render() {
-        const {showModelInput, model, editableData, selectedDataType} = this.state;
+        const {showModelInput, model, selectedDataType, selectedId, modelXml} = this.state;
 
         return (
             <div className="relative w-full">
                 <div
-                    className={`bg-black z-20 justify-center items-center absolute w-screen h-screen pin ${showModelInput ? 'flex' : 'hidden'}`}>
+                    className={`bg-black z-30 justify-center items-center absolute w-screen h-screen pin ${showModelInput ? 'flex' : 'hidden'}`}>
                     <div className='w-1/2 bg-white flex flex-col' style={{height: 'calc(100vh - 60px)'}}>
                         <div
                             className='p-4 border-b border-grey-lighter font-bold text-grey-darker flex justify-between items-center'>
                             <span className='text-xl'>Model</span>
                             <button onClick={this.toggleModelInput}>Close</button>
                         </div>
-                        <textarea className='w-full flex-grow' onChange={this.handleModelSourceChange}/>
+                        <textarea className='w-full flex-grow'
+                                  onChange={e => this.handleModelSourceChange(e.target.value)} value={modelXml}/>
                     </div>
                 </div>
-                {editableData !== undefined && <div className='fixed pin-b pin-r mr-6 bg-white z-20 shadow-lg'>
+                {selectedDataType !== SelectedDataType.NONE &&
+                <div className='fixed pin-b pin-r mr-6 bg-white z-20 shadow-lg'>
                   <div className='flex justify-between border-b border-grey-lighter p-4 mb-2'>
                     <p
                       className='uppercase tracking-wide text-grey-darker text-base font-bold'>
@@ -86,7 +108,7 @@ class App extends Component<IProps, IState> {
                   </div>
                   <div className='p-2'>
                       {selectedDataType === SelectedDataType.ENTITY &&
-                      <EntityEditor model={model} entity={editableData}/>}
+                      <EntityEditor model={model} entity={this.getEditableDataForSelection(model, selectedDataType, selectedId!) as IEntity} onEntityChange={this.handleEntityChange}/>}
                   </div>
                 </div>}
 
