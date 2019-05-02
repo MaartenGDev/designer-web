@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Connection, jsPlumb} from 'jsplumb';
+import {Connection, jsPlumb, OnConnectionBindInfo} from 'jsplumb';
 import IModel from "../models/IModel";
 import EndpointFactory from "../helpers/EndpointFactory";
 import {SelectedDataType} from "../models/SelectedDataType";
@@ -18,6 +18,7 @@ const confirm = (data: any) => {
 
 class Diagram extends Component<IProps, IState> {
     private diagram: any;
+    private hasLoadedDataForDiagramAtLeastOnce = false;
 
     async componentDidMount() {
         const {model} = this.props;
@@ -27,16 +28,25 @@ class Diagram extends Component<IProps, IState> {
     }
 
     componentWillReceiveProps(nextProps: Readonly<IProps>, nextContext: any): void {
+        if(this.props.model === nextProps.model) return;
         this.loadDiagram(nextProps.model);
     }
 
     setupDiagram(): any {
         return new Promise((res, rej) => {
             (jsPlumb as any).ready(() => {
-                res(jsPlumb.getInstance({
+                const instance = jsPlumb.getInstance({
                     DragOptions: {cursor: 'pointer', zIndex: 1},
                     Container: 'canvas'
-                }));
+                });
+
+                instance.bind('click', (conn: Connection) => {
+                    this.diagram.detach(conn);
+                });
+
+                instance.bind('beforeDetach', (info: OnConnectionBindInfo) => confirm('Delete connection?'));
+
+                res(instance);
             });
         });
     }
@@ -57,6 +67,7 @@ class Diagram extends Component<IProps, IState> {
 
             const entityElements = document.querySelectorAll('.editor .entity');
 
+
             for (let i = 0; i < entityElements.length; i++) {
                 const sourceId = entityElements[i].id;
 
@@ -72,15 +83,9 @@ class Diagram extends Component<IProps, IState> {
                 }
             }
 
-            this.diagram.bind('click', (conn: Connection) => {
-                this.diagram.detach(conn);
-            });
+            this.diagram.draggable(entityElements, {force: false});
 
-            this.diagram.bind('beforeDetach', function (conn: Connection) {
-                return confirm('Delete connection?');
-            });
-
-            this.diagram.draggable(entityElements);
+            this.hasLoadedDataForDiagramAtLeastOnce = true;
         });
     }
 
@@ -131,7 +136,7 @@ class Diagram extends Component<IProps, IState> {
         return (
             <div id="diagramContainer" className='editor relative'>
                 {model.entities.map(entity => {
-                    return <div className="entity absolute bg-white shadow" id={entity.id} style={{
+                    return <div key={entity.id} id={entity.id} className="entity absolute bg-white shadow" style={{
                         top: this.calculateLengthBetweenYCoordinates(entity.location.topLeft.y, topY) * heightScaleFactor,
                         left: this.calculateLengthBetweenXCoordinates(entity.location.topLeft.x, leftX) * widthScaleFactor,
                     }} onClick={e => {
@@ -145,11 +150,11 @@ class Diagram extends Component<IProps, IState> {
                             <table className='text-sm'>
                                 <tbody>
                                 {entity.attributes.map(attribute => {
-                                    const isPrimaryIdentifier = entity.identifiers.some(identifier => identifier.attributeId === attribute.id);
+                                    const isIdentifier = entity.identifiers.some(identifier => identifier.attributeId === attribute.id);
 
-                                    return <tr className={isPrimaryIdentifier ? 'primary-identifier-row' : ''}>
+                                    return <tr key={attribute.id} className={isIdentifier ? 'primary-identifier-row' : ''}>
                                         <td className='pr-2'>{model.dataItems[attribute.dataItemId].name}</td>
-                                        <td>{isPrimaryIdentifier ? '<pi>' : ''}</td>
+                                        <td>{isIdentifier ? '<pi>' : ''}</td>
                                         <td className='pl-2'>{model.dataItems[attribute.dataItemId].domainId === undefined ? model.dataItems[attribute.dataItemId].name : model.domains[model.dataItems[attribute.dataItemId].domainId!].name}</td>
                                     </tr>
                                 })}

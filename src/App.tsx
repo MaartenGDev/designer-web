@@ -111,7 +111,13 @@ class App extends Component<IProps, IState> {
                   </div>
                   <div className='p-2'>
                       {selectedDataType === SelectedDataType.ENTITY &&
-                      <EntityEditor model={model} entity={this.getEditableDataForSelection(model, selectedDataType, selectedId!) as IEntity} onEntityChange={this.handleEntityChange} onEntityAttributeDomainChange={this.handleEntityAttributeDomainChange}/>}
+                      <EntityEditor
+                        model={model}
+                        entity={this.getEditableDataForSelection(model, selectedDataType, selectedId!) as IEntity}
+                        onEntityChange={this.handleEntityChange}
+                        onEntityAttributeDomainChange={this.handleEntityAttributeDomainChange}
+                        onEntityIdentifierChange={e => {}}
+                      />}
                   </div>
                 </div>}
 
