@@ -2,11 +2,13 @@ import React, {Component} from 'react';
 import IEntity from "../../models/IEntity";
 import IModel from "../../models/IModel";
 import ShowIfTrue from "../common/ShowIfTrue";
+import IEntityAttribute from "../../models/IEntityAttribute";
 
 interface IProps {
     entity: IEntity,
     model: IModel,
     onEntityChange: (entityId: string, attributeName: string, value: any) => void
+    onEntityAttributeDomainChange: (entityId: string, attributeId: string, dataItemId: string, nextDomainId: string) => void
 }
 
 interface IState {
@@ -52,18 +54,17 @@ class EntityEditor extends Component<IProps, IState> {
     };
 
     componentDidMount(): void {
-        const {model} = this.props
+        const {model, entity} = this.props;
 
         this.setState({
-            dataTypeSourceByAttributeId: Object.keys(model.attributes).reduce((acc: { [key: string]: DataTypeSourceType }, attributeId: string) => {
-                acc[attributeId] = model.attributes[attributeId].domainId === undefined ? DataTypeSourceType.RAW_TYPE : DataTypeSourceType.DOMAIN
+            dataTypeSourceByAttributeId: entity.attributes.reduce((acc: { [key: string]: DataTypeSourceType }, attribute: IEntityAttribute) => {
+                acc[attribute.id] = model.dataItems[attribute.dataItemId].domainId === undefined ? DataTypeSourceType.RAW_TYPE : DataTypeSourceType.DOMAIN;
                 return acc;
             }, {})
         })
     }
 
-    handleDataTypeSource = (attributeId: string, nextTypeSource: DataTypeSourceType) => {
-        console.log(nextTypeSource)
+    handleDataTypeSourceChange = (attributeId: string, nextTypeSource: DataTypeSourceType) => {
         this.setState((prevState) => ({
             dataTypeSourceByAttributeId: {
                 ...prevState.dataTypeSourceByAttributeId,
@@ -73,7 +74,7 @@ class EntityEditor extends Component<IProps, IState> {
     };
 
     render() {
-        const {entity, model, onEntityChange} = this.props;
+        const {entity, model, onEntityChange, onEntityAttributeDomainChange} = this.props;
         const dataTypeSourceByAttributeId: { [key: string]: DataTypeSourceType } = this.state.dataTypeSourceByAttributeId;
 
         const domainOptions = Object.values(model.domains).map(domain => ({
@@ -89,7 +90,8 @@ class EntityEditor extends Component<IProps, IState> {
                     </label>
                     <input
                         className="form__input focus:outline-none focus:bg-white focus:border-grey text-sm"
-                        id="form-input-name" type="text" placeholder="" value={entity.name} onChange={e => onEntityChange(entity.id, 'a:Name', e.target.value)} />
+                        id="form-input-name" type="text" placeholder="" value={entity.name}
+                        onChange={e => onEntityChange(entity.id, 'a:Name', e.target.value)}/>
                 </div>
                 <div className="w-full mt-6">
                     <label className="form__label" htmlFor="form-input-name">
@@ -105,46 +107,47 @@ class EntityEditor extends Component<IProps, IState> {
                             <th className='table__header'>Length</th>
                             <th className='table__header'>Identifier</th>
                         </tr>
-                        {entity.attributeIds.map(attributeId => {
-                            const isPrimaryIdentifier = model.attributes[attributeId].domainId !== undefined && model.domains[model.attributes[attributeId].domainId!].dataType === 'I';
+                        {entity.attributes.map(attribute => {
+                            const isPrimaryIdentifier = model.dataItems[attribute.dataItemId].domainId !== undefined && model.domains[model.dataItems[attribute.dataItemId].domainId!].dataType === 'I';
 
-                            return <tr key={attributeId}>
-                                <td className='table__cell'>{model.attributes[attributeId].name}</td>
+                            return <tr key={attribute.id}>
+                                <td className='table__cell'>{model.dataItems[attribute.dataItemId].name}</td>
                                 <td className='table__cell'>
                                     <select className='form__input form__input--select'
-                                            value={dataTypeSourceByAttributeId[attributeId]}
-                                            onChange={e => this.handleDataTypeSource(attributeId, e.target.value === DataTypeSourceType.DOMAIN.toString() ? DataTypeSourceType.DOMAIN : DataTypeSourceType.RAW_TYPE)}>
+                                            value={dataTypeSourceByAttributeId[attribute.id]}
+                                            onChange={e => this.handleDataTypeSourceChange(attribute.id, e.target.value === DataTypeSourceType.DOMAIN.toString() ? DataTypeSourceType.DOMAIN : DataTypeSourceType.RAW_TYPE)}>
                                         <option value={DataTypeSourceType.DOMAIN}>Domain</option>
                                         <option value={DataTypeSourceType.RAW_TYPE}>Raw Type</option>
                                     </select>
                                 </td>
                                 <ShowIfTrue
-                                    condition={dataTypeSourceByAttributeId[attributeId] === DataTypeSourceType.RAW_TYPE}>
+                                    condition={dataTypeSourceByAttributeId[attribute.id] === DataTypeSourceType.RAW_TYPE}>
                                     <td className='table__cell'>
                                         <select className='form__input form__input--select'>
                                             {Object.keys(dataTypesById).map((type: string) => <option
-                                                selected={type === model.attributes[attributeId].dataType}>{getLabelForDataType(type)}</option>)}
+                                                selected={type === model.dataItems[attribute.dataItemId].dataType}>{getLabelForDataType(type)}</option>)}
                                         </select>
                                     </td>
-                                    <td className='p-2 border-t border-grey-light  text-xs'><input type='number'
-                                                                                                   className='form__input'
-                                                                                                   value={model.attributes[attributeId].length}/>
+                                    <td className='p-2 border-t border-grey-light  text-xs'>
+                                        <input type='number'
+                                               className='form__input'
+                                               value={model.dataItems[attribute.dataItemId].length}/>
                                     </td>
                                 </ShowIfTrue>
                                 <ShowIfTrue
-                                    condition={dataTypeSourceByAttributeId[attributeId] === DataTypeSourceType.DOMAIN}>
+                                    condition={dataTypeSourceByAttributeId[attribute.id] === DataTypeSourceType.DOMAIN}>
                                     <td className='table__cell'>
-                                        <select className='form__input form__input--select'>
-                                            <option selected={model.attributes[attributeId].domainId === undefined}>None
-                                            </option>
+                                        <select className='form__input form__input--select'
+                                                value={model.dataItems[attribute.dataItemId].domainId}
+                                                onChange={e => onEntityAttributeDomainChange(entity.id, attribute.id, attribute.dataItemId, e.target.value)}>
                                             {domainOptions.map(domain => <option
-                                                selected={domain.id === model.attributes[attributeId].domainId}>{domain.label}</option>)}
+                                                value={domain.id}>{domain.label}</option>)}
                                         </select>
                                     </td>
                                     <td className='table__cell'>
                                         <input type='number'
                                                className='form__input'
-                                               value={model.domains[model.attributes[attributeId].domainId!].length}
+                                               value={model.domains[model.dataItems[attribute.dataItemId].domainId!].length}
                                                disabled={true}/>
                                     </td>
                                 </ShowIfTrue>

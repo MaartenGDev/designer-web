@@ -25,14 +25,53 @@ class CDMModel {
         return Array.from(nodes).find(node => node.nodeName === nodeName) as Element;
     }
 
-    setAttributeForEntity(entityId: string, attributeName: string, value: string) {
-        const entity = Array.from(this.findNode('c:Entities').childNodes)
-            .find(x => x.nodeName === 'o:Entity' && (x as Element).getAttribute('Id') === entityId) as Element;
+    private findChildNode(node: Node, predicate: (childNode: Node) => boolean): Element {
+        return Array.from(node.childNodes).find(predicate) as Element;
+    }
 
-        const valueNode = (Array.from(entity.childNodes).find(x => x.nodeName === attributeName) as Element).firstChild as Text;
+    private findEntity(entityId: string): Element {
+        return this.findChildNode(this.findNode('c:Entities'), (node: Node) => {
+            return node.nodeName === 'o:Entity' && (node as Element).getAttribute('Id') === entityId
+        })
+    }
+
+    setAttributeForEntity(entityId: string, attributeName: string, value: string) {
+        const entity = this.findEntity(entityId);
+        const valueNode = this.findChildNode(entity, (node: Node) => node.nodeName === attributeName).firstChild as Text;
 
         valueNode.data = value;
         return entity;
+    }
+
+    setDataItemRefForEntity(entityId: string, attributeId: string, dataItemId: string) {
+        const entity = this.findEntity(entityId);
+        const attribute = this.findChildNode(this.findChildNode(this.findChildNode(this.findChildNode(entity,
+            (entityProperty) => entityProperty.nodeName === 'c:Attributes'), (node) => {
+                return node.nodeName === 'o:EntityAttribute' && (node as Element).getAttribute('Id') === attributeId
+            }), (entityAttribute) => entityAttribute.nodeName === 'c:DataItem'),
+            (node: Node) => {
+                return node.nodeName === 'o:DataItem';
+            });
+
+        attribute.setAttribute('Ref', dataItemId);
+
+        return entity;
+    }
+
+    setDomainForDataItem(dataItemId: string, nextDomainId: string): Element {
+        const dataItem = this.findChildNode(this.findNode('c:DataItems'), (node) => {
+            return node.nodeName === 'o:DataItem' && (node as Element).getAttribute('Id') === dataItemId
+        });
+
+        const domainForDataItem = this.findChildNode(this.findChildNode(dataItem, (node) => {
+            return node.nodeName === 'c:Domain'
+        }), (node) => {
+            return node.nodeName === 'o:Domain'
+        });
+
+        domainForDataItem.setAttribute("Ref", nextDomainId);
+
+        return dataItem;
     }
 
     getAsXml() {

@@ -144,13 +144,13 @@ class Diagram extends Component<IProps, IState> {
                         <div className='p-4'>
                             <table className='text-sm'>
                                 <tbody>
-                                {entity.attributeIds.map(attributeId => {
-                                    const isPrimaryIdentifier = model.attributes[attributeId].domainId !== undefined && model.domains[model.attributes[attributeId].domainId!].dataType === 'I';
+                                {entity.attributes.map(attribute => {
+                                    const isPrimaryIdentifier = entity.identifiers.some(identifier => identifier.attributeId === attribute.id);
 
                                     return <tr className={isPrimaryIdentifier ? 'primary-identifier-row' : ''}>
-                                        <td className='pr-2'>{model.attributes[attributeId].name}</td>
+                                        <td className='pr-2'>{model.dataItems[attribute.dataItemId].name}</td>
                                         <td>{isPrimaryIdentifier ? '<pi>' : ''}</td>
-                                        <td className='pl-2'>{model.attributes[attributeId].domainId === undefined ? model.attributes[attributeId].name : model.domains[model.attributes[attributeId].domainId!].name}</td>
+                                        <td className='pl-2'>{model.dataItems[attribute.dataItemId].domainId === undefined ? model.dataItems[attribute.dataItemId].name : model.domains[model.dataItems[attribute.dataItemId].domainId!].name}</td>
                                     </tr>
                                 })}
                                 </tbody>

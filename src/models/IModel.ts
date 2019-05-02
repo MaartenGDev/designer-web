@@ -5,7 +5,7 @@ import IDomain from "./IDomain";
 
 interface IModel {
     entities: IEntity[],
-    attributes: { [key: string]: IAttribute },
+    dataItems: { [key: string]: IAttribute },
     domains: { [key: string]: IDomain },
     relations: IRelation[],
 }

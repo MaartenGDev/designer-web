@@ -34,7 +34,7 @@ const getAsJson = (model: any): IModel => {
         return acc;
     }, {});
 
-    const globalAttributes: { [key: string]: IAttribute } = rootModel['c:DataItems'][0]['o:DataItem'].reduce((acc: { [key: string]: IAttribute }, cur: any) => {
+    const dataItems: { [key: string]: IAttribute } = rootModel['c:DataItems'][0]['o:DataItem'].reduce((acc: { [key: string]: IAttribute }, cur: any) => {
         acc[cur['$'].Id] = {
             id: cur['$'].Id,
             name: cur['a:Name'][0],
@@ -60,16 +60,22 @@ const getAsJson = (model: any): IModel => {
             },
         }));
 
-    console.log(domains)
     return {
         entities: entities.map((entity: any) => ({
             id: entity['$'].Id,
             name: entity['a:Name'][0],
-            attributeIds: entity['c:Attributes'][0]['o:EntityAttribute'].map((attribute: any) => attribute['c:DataItem'][0]['o:DataItem'][0]['$'].Ref),
+            attributes: entity['c:Attributes'][0]['o:EntityAttribute'].map((attribute: any) => ({
+                id: attribute['$'].Id,
+                dataItemId: attribute['c:DataItem'][0]['o:DataItem'][0]['$'].Ref
+            })),
+            identifiers: entity['c:Identifiers'][0]['o:Identifier'].map((attribute: any) => ({
+                id: attribute['$'].Id,
+                attributeId: attribute['c:Identifier.Attributes'][0]['o:EntityAttribute'][0]['$'].Ref
+            })),
             location: coordinatesByEntityId[entity['$'].Id]
         })),
-        domains: domains,
-        attributes: globalAttributes,
+        domains,
+        dataItems,
         relations
     };
 };

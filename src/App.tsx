@@ -29,7 +29,7 @@ class App extends Component<IProps, IState> {
         modelXml: '',
         model: {
             entities: [],
-            attributes: {},
+            dataItems: {},
             relations: [],
             domains: {}
         },
@@ -51,8 +51,6 @@ class App extends Component<IProps, IState> {
 
     handleModelSourceChange = (xml: string) => {
         xmlParser(xml, (data: IModel) => {
-            console.log('got new model!')
-            console.log(data)
             this.setState({
                 model: data,
                 modelXml: xml
@@ -69,6 +67,11 @@ class App extends Component<IProps, IState> {
 
     private handleEntityChange = (entityId: string, attributeName: string, value: any) => {
         this.CDMModel.setAttributeForEntity(entityId, attributeName, value);
+        this.handleModelSourceChange(this.CDMModel.getAsXml());
+    };
+
+    private handleEntityAttributeDomainChange = (entityId: string, attributeId: string, dataItemId: string, nextDomainId: string) => {
+        this.CDMModel.setDomainForDataItem(dataItemId, nextDomainId);
         this.handleModelSourceChange(this.CDMModel.getAsXml());
     };
 
@@ -108,7 +111,7 @@ class App extends Component<IProps, IState> {
                   </div>
                   <div className='p-2'>
                       {selectedDataType === SelectedDataType.ENTITY &&
-                      <EntityEditor model={model} entity={this.getEditableDataForSelection(model, selectedDataType, selectedId!) as IEntity} onEntityChange={this.handleEntityChange}/>}
+                      <EntityEditor model={model} entity={this.getEditableDataForSelection(model, selectedDataType, selectedId!) as IEntity} onEntityChange={this.handleEntityChange} onEntityAttributeDomainChange={this.handleEntityAttributeDomainChange}/>}
                   </div>
                 </div>}
 
