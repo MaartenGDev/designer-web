@@ -58,10 +58,14 @@ class CDMModel {
         return entity;
     }
 
-    setDomainForDataItem(dataItemId: string, nextDomainId: string): Element {
-        const dataItem = this.findChildNode(this.findNode('c:DataItems'), (node) => {
+    private findDataItem(dataItemId: string) {
+        return this.findChildNode(this.findNode('c:DataItems'), (node) => {
             return node.nodeName === 'o:DataItem' && (node as Element).getAttribute('Id') === dataItemId
         });
+    }
+
+    setDomainForDataItem(dataItemId: string, nextDomainId: string): Element {
+        const dataItem = this.findDataItem(dataItemId);
 
         const domainForDataItem = this.findChildNode(this.findChildNode(dataItem, (node) => {
             return node.nodeName === 'c:Domain'
@@ -70,6 +74,42 @@ class CDMModel {
         });
 
         domainForDataItem.setAttribute("Ref", nextDomainId);
+
+        return dataItem;
+    }
+
+    setDataTypeAndLengthForDataItem(dataItemId: string, nextDataType: string, nextDataTypeLength: number): Element {
+        const dataItem = this.findDataItem(dataItemId);
+
+        const domain = this.findChildNode(dataItem, (node) => node.nodeName === 'c:Domain');
+
+        if (domain !== undefined) {
+            dataItem.removeChild(domain)
+        }
+
+        const dataTypeNode = this.findChildNode(dataItem, (node) => {
+            return node.nodeName === 'a:DataType';
+        }).firstChild as Text;
+
+        dataTypeNode.data = nextDataType;
+
+        console.log(dataTypeNode)
+
+        let dataTypeLengthNode = this.findChildNode(dataItem, (node) => {
+            return node.nodeName === 'a:Length';
+        });
+
+        if (dataTypeLengthNode === undefined) {
+            const lengthNode = this.document.createElement('a:Length');
+            lengthNode.appendChild(this.document.createTextNode(nextDataTypeLength.toString()));
+
+            dataItem.appendChild(lengthNode);
+            dataTypeLengthNode = lengthNode;
+        }
+
+        (dataTypeLengthNode.firstChild as Text).data = nextDataTypeLength.toString();
+
+        console.log(this.getAsXml())
 
         return dataItem;
     }

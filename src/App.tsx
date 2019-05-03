@@ -70,6 +70,11 @@ class App extends Component<IProps, IState> {
         this.handleModelSourceChange(this.CDMModel.getAsXml());
     };
 
+    private handleEntityAttributeChange = (entityId: string, attributeId: string, dataItemId: string, nextDataType: string, nextDataTypeLength: number) => {
+        this.CDMModel.setDataTypeAndLengthForDataItem(dataItemId, nextDataType, nextDataTypeLength);
+        this.handleModelSourceChange(this.CDMModel.getAsXml());
+    };
+
     private handleEntityAttributeDomainChange = (entityId: string, attributeId: string, dataItemId: string, nextDomainId: string) => {
         this.CDMModel.setDomainForDataItem(dataItemId, nextDomainId);
         this.handleModelSourceChange(this.CDMModel.getAsXml());
@@ -115,6 +120,7 @@ class App extends Component<IProps, IState> {
                         model={model}
                         entity={this.getEditableDataForSelection(model, selectedDataType, selectedId!) as IEntity}
                         onEntityChange={this.handleEntityChange}
+                        onEntityAttributeChange={this.handleEntityAttributeChange}
                         onEntityAttributeDomainChange={this.handleEntityAttributeDomainChange}
                         onEntityIdentifierChange={e => {}}
                       />}

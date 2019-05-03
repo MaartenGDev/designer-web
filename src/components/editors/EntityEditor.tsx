@@ -11,6 +11,7 @@ interface IProps {
     model: IModel,
     onEntityChange: (entityId: string, attributeName: string, value: any) => void
     onEntityAttributeDomainChange: (entityId: string, attributeId: string, dataItemId: string, nextDomainId: string) => void
+    onEntityAttributeChange: (entityId: string, attributeId: string, dataItemId: string, nextDataType: string, nextDataTypeLength: number) => void
     onEntityIdentifierChange: (entityId: string, changAction: EntityIdentifierChangeAction, identifier: IEntityIdentifier | undefined) => void
 }
 
@@ -85,8 +86,18 @@ class EntityEditor extends Component<IProps, IState> {
         }))
     };
 
+    getTypeIdentifierForDataType(dataTypeName: string){
+        for(const typeIdentifier of Object.keys(dataTypesById)){
+            if(dataTypesById[typeIdentifier] === dataTypeName){
+                return typeIdentifier;
+            }
+        }
+
+        return null;
+    }
+
     render() {
-        const {entity, model, onEntityChange, onEntityAttributeDomainChange, onEntityIdentifierChange} = this.props;
+        const {entity, model, onEntityChange, onEntityAttributeDomainChange, onEntityIdentifierChange, onEntityAttributeChange} = this.props;
         const dataTypeSourceByAttributeId: { [key: string]: DataTypeSourceType } = this.state.dataTypeSourceByAttributeId;
 
         const domainOptions = Object.values(model.domains).map(domain => ({
@@ -135,14 +146,16 @@ class EntityEditor extends Component<IProps, IState> {
                                 <ShowIfTrue
                                     condition={dataTypeSourceByAttributeId[attribute.id] === DataTypeSourceType.RAW_TYPE}>
                                     <td className='table__cell'>
-                                        <select className='form__input form__input--select'>
-                                            {Object.keys(dataTypesById).map((type: string) => <option key={attribute.dataItemId}
-                                                selected={type === model.dataItems[attribute.dataItemId].dataType}>{getLabelForDataType(type)}</option>)}
+                                        <select className='form__input form__input--select'
+                                                value={model.dataItems[attribute.dataItemId].dataType}
+                                                onChange={e => onEntityAttributeChange(entity.id, attribute.id, attribute.dataItemId, e.target.value, model.dataItems[attribute.dataItemId].length)}>
+                                            {Object.keys(dataTypesById).map((type: string) => <option key={type} value={type}>{getLabelForDataType(type)}</option>)}
                                         </select>
                                     </td>
                                     <td className='p-2 border-t border-grey-light  text-xs'>
                                         <input type='number'
                                                className='form__input'
+                                               onChange={e => onEntityAttributeChange(entity.id, attribute.id, attribute.dataItemId, model.dataItems[attribute.dataItemId].dataType, parseInt(e.target.value, 10))}
                                                value={model.dataItems[attribute.dataItemId].length}/>
                                     </td>
                                 </ShowIfTrue>
