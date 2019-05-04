@@ -32,7 +32,10 @@
     "start-js": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "deploy": "run-s deploy:*",
+    "deploy:js": "npm run build",
+    "deploy:s3": "aws s3 sync --acl public-read --delete build/ s3://cdm.maartendev.me"
   },
   "eslintConfig": {
     "extends": "react-app"

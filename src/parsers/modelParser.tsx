@@ -61,7 +61,8 @@ const getAsJson = (model: any): IModel => {
         }));
 
     return {
-        entities: entities.map((entity: any) => ({
+        entities: entities.map((entity: any) => {
+            return {
             id: entity['$'].Id,
             uid: entity['a:ObjectID'][0],
             name: entity['a:Name'][0],
@@ -76,7 +77,7 @@ const getAsJson = (model: any): IModel => {
                 }))
                 : [],
             location: coordinatesByEntityId[entity['$'].Id]
-        })),
+        }}),
         domains,
         dataItems,
         relations

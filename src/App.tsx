@@ -1,7 +1,6 @@
 import * as React from 'react';
 import {Component} from 'react';
 import xmlParser from './parsers/modelParser';
-import data from './data/schema'
 import IModel from "./models/IModel";
 import Diagram from "./components/Diagram";
 import {SelectedDataType} from "./models/SelectedDataType";
@@ -10,6 +9,8 @@ import {MdClose} from 'react-icons/md'
 import CDMModel from "./parsers/CDMModel";
 import IEntity from "./models/IEntity";
 import {DownloadHelper} from "./helpers/DownloadHelper";
+import {EntityIdentifierChangeAction} from "./models/EntityIdentifierChangeAction";
+import IEntityIdentifier from "./models/IEntityIdentifier";
 
 interface IProps {
 }
@@ -81,6 +82,13 @@ class App extends Component<IProps, IState> {
         this.handleModelSourceChange(this.CDMModel.getAsXml());
     };
 
+    private handleEntityIdentifierChange = (entityId: string, changeAction: EntityIdentifierChangeAction, identifier: IEntityIdentifier | undefined) => {
+        if (changeAction === EntityIdentifierChangeAction.DETACH) {
+            this.CDMModel.removeIdentifierForEntity(entityId, identifier!);
+            this.handleModelSourceChange(this.CDMModel.getAsXml());
+        }
+    };
+
     private getEditableDataForSelection = (model: IModel, selectedDataType: SelectedDataType, selectedId: string): IEntity | undefined => {
         if (selectedDataType === SelectedDataType.NONE) return undefined;
 
@@ -95,12 +103,12 @@ class App extends Component<IProps, IState> {
         DownloadHelper.downloadAsFile('model.cdm', data)
     };
 
-    private handleModelUpload = (e: {target: HTMLInputElement}) => {
-        if(e.target.files === null || e.target.files.length === 0) return;
+    private handleModelUpload = (e: { target: HTMLInputElement }) => {
+        if (e.target.files === null || e.target.files.length === 0) return;
         const reader = new FileReader();
 
         reader.onload = () => {
-            if(reader.result === null) return;
+            if (reader.result === null) return;
             const result = reader.result.toString();
 
             this.CDMModel.loadFromXml(result);
@@ -144,8 +152,7 @@ class App extends Component<IProps, IState> {
                         onEntityChange={this.handleEntityChange}
                         onEntityAttributeChange={this.handleEntityAttributeChange}
                         onEntityAttributeDomainChange={this.handleEntityAttributeDomainChange}
-                        onEntityIdentifierChange={e => {
-                        }}
+                        onEntityIdentifierChange={this.handleEntityIdentifierChange}
                       />}
                   </div>
                 </div>}
@@ -164,8 +171,7 @@ class App extends Component<IProps, IState> {
 
                                 <div className="upload-btn-wrapper cursor-pointer">
                                     <span
-                                        className="uppercase text-grey-darker font-bold cursor-pointer upload-btn-wrapper__label"
-                                        onClick={this.toggleModelInput}>Upload Model</span>
+                                        className="uppercase text-grey-darker font-bold cursor-pointer upload-btn-wrapper__label">Upload Model</span>
                                     <input type="file" className='upload-btn-wrapper__input'
                                            onChange={this.handleModelUpload}/>
                                 </div>

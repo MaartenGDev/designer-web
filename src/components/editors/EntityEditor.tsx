@@ -11,7 +11,7 @@ interface IProps {
     onEntityChange: (entityId: string, attributeName: string, value: any) => void
     onEntityAttributeDomainChange: (entityId: string, attributeId: string, dataItemId: string, nextDomainId: string) => void
     onEntityAttributeChange: (entityId: string, attributeId: string, dataItemId: string, nextDataType: string, nextDataTypeLength: number) => void
-    onEntityIdentifierChange: (entityId: string, changAction: EntityIdentifierChangeAction, identifier: IEntityIdentifier | undefined) => void
+    onEntityIdentifierChange: (entityId: string, changeAction: EntityIdentifierChangeAction, identifier: IEntityIdentifier | undefined) => void
 }
 
 interface IState {

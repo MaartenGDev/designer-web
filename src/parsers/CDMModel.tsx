@@ -1,4 +1,5 @@
 import {DOMParser, XMLSerializer} from 'xmldom'
+import IEntityIdentifier from "../models/IEntityIdentifier";
 
 class CDMModel {
     private document: Document = new Document();
@@ -108,6 +109,29 @@ class CDMModel {
         (dataTypeLengthNode.firstChild as Text).data = nextDataTypeLength.toString();
 
         return dataItem;
+    }
+
+    removeIdentifierForEntity(entityId: string, identifier: IEntityIdentifier) {
+        const entity = this.findEntity(entityId);
+        const identifiers = this.findChildNode(entity, (node) => node.nodeName === 'c:Identifiers');
+
+        const identifierNode = this.findChildNode(identifiers, (node) => {
+            return node.nodeName === 'o:Identifier' && (node as Element).getAttribute('Id') === identifier.id
+        });
+
+        if(identifierNode !== undefined){
+            identifiers.removeChild(identifierNode);
+        }
+
+        // Try to find a leftover identifier
+        const leftOverIdentifierNode = this.findChildNode(identifiers, (node) => node.nodeName === 'o:Identifier');
+
+        // Remove identifiers element if there are no identifiers left.
+        if(leftOverIdentifierNode === undefined){
+            entity.removeChild(identifiers);
+        }
+
+        return entity;
     }
 
     getAsXml() {
