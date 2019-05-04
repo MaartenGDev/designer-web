@@ -63,7 +63,7 @@ const getAsJson = (model: any): IModel => {
     return {
         entities: entities.map((entity: any) => ({
             id: entity['$'].Id,
-            uid: entity['a:Name'][0],
+            uid: entity['a:ObjectID'][0],
             name: entity['a:Name'][0],
             attributes: entity['c:Attributes'][0]['o:EntityAttribute'].map((attribute: any) => ({
                 id: attribute['$'].Id,

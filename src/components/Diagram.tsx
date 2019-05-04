@@ -23,7 +23,7 @@ class Diagram extends Component<IProps, IState> {
     async componentDidMount() {
         const {model} = this.props;
 
-        this.diagram = await this.setupDiagram();
+        this.diagram = await this.buildDiagramInstance();
         this.loadDataForDiagram(model);
     }
 
@@ -38,10 +38,10 @@ class Diagram extends Component<IProps, IState> {
         this.diagram.deleteEveryConnection();
         this.diagram.deleteEveryEndpoint();
 
-        this.diagram = await this.setupDiagram();
+        this.diagram = await this.buildDiagramInstance();
     };
 
-    setupDiagram(): any {
+    buildDiagramInstance(): any {
         return new Promise((res, rej) => {
             (jsPlumb as any).ready(() => {
                 const instance = jsPlumb.getInstance({
@@ -138,7 +138,7 @@ class Diagram extends Component<IProps, IState> {
         const [widthScaleFactor, heightScaleFactor, leftX, topY] = this.calculateScalingFactors(model);
 
         return (
-            <div id="diagramContainer" className='editor relative'>
+            <div id="diagramContainer" className='editor relative flex-grow overflow-auto'>
                 {model.entities.map((entity) => {
                     return <div key={entity.id} id={entity.id} className={`entity absolute bg-white shadow ${model.relations.find(x => x.from.ref === entity.id || x.to.ref === entity.id) === undefined ? '' : 'has-relations'}`} style={{
                         top: this.calculateLengthBetweenYCoordinates(entity.location.topLeft.y, topY) * heightScaleFactor,

@@ -174,7 +174,7 @@ class App extends Component<IProps, IState> {
                         </div>
                     </div>
 
-                    <div id="diagram-window" className="px-6 mt-12 flex-grow"
+                    <div id="diagram-window" className="pl-2 mt-12 flex-grow flex flex-col"
                          onClick={_ => this.handleModelSelectionChange(SelectedDataType.NONE, undefined)}>
                         {model.entities.length > 0
                             ? <Diagram model={model} onModelSelectionChange={this.handleModelSelectionChange}/>
