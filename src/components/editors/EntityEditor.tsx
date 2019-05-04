@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import IEntity from "../../models/IEntity";
 import IModel from "../../models/IModel";
-import ShowIfTrue from "../common/ShowIfTrue";
 import IEntityAttribute from "../../models/IEntityAttribute";
 import {EntityIdentifierChangeAction} from "../../models/EntityIdentifierChangeAction";
 import IEntityIdentifier from "../../models/IEntityIdentifier";
@@ -86,16 +85,6 @@ class EntityEditor extends Component<IProps, IState> {
         }))
     };
 
-    getTypeIdentifierForDataType(dataTypeName: string){
-        for(const typeIdentifier of Object.keys(dataTypesById)){
-            if(dataTypesById[typeIdentifier] === dataTypeName){
-                return typeIdentifier;
-            }
-        }
-
-        return null;
-    }
-
     render() {
         const {entity, model, onEntityChange, onEntityAttributeDomainChange, onEntityIdentifierChange, onEntityAttributeChange} = this.props;
         const dataTypeSourceByAttributeId: { [key: string]: DataTypeSourceType } = this.state.dataTypeSourceByAttributeId;
@@ -104,6 +93,7 @@ class EntityEditor extends Component<IProps, IState> {
             id: domain.id,
             label: `${domain.name}(${getLabelForDataType(domain.dataType)})`
         }));
+
 
         return (
             <div>
@@ -143,43 +133,43 @@ class EntityEditor extends Component<IProps, IState> {
                                         <option value={DataTypeSourceType.RAW_TYPE}>Raw Type</option>
                                     </select>
                                 </td>
-                                <ShowIfTrue
-                                    condition={dataTypeSourceByAttributeId[attribute.id] === DataTypeSourceType.RAW_TYPE}>
-                                    <td className='table__cell'>
-                                        <select className='form__input form__input--select'
-                                                value={model.dataItems[attribute.dataItemId].dataType}
-                                                onChange={e => onEntityAttributeChange(entity.id, attribute.id, attribute.dataItemId, e.target.value, model.dataItems[attribute.dataItemId].length)}>
-                                            {Object.keys(dataTypesById).map((type: string) => <option key={type} value={type}>{getLabelForDataType(type)}</option>)}
-                                        </select>
-                                    </td>
-                                    <td className='p-2 border-t border-grey-light  text-xs'>
-                                        <input type='number'
-                                               className='form__input'
-                                               onChange={e => onEntityAttributeChange(entity.id, attribute.id, attribute.dataItemId, model.dataItems[attribute.dataItemId].dataType, parseInt(e.target.value, 10))}
-                                               value={model.dataItems[attribute.dataItemId].length}/>
-                                    </td>
-                                </ShowIfTrue>
-                                <ShowIfTrue
-                                    condition={dataTypeSourceByAttributeId[attribute.id] === DataTypeSourceType.DOMAIN}>
-                                    <td className='table__cell'>
-                                        <select className='form__input form__input--select'
-                                                value={model.dataItems[attribute.dataItemId].domainId}
-                                                onChange={e => onEntityAttributeDomainChange(entity.id, attribute.id, attribute.dataItemId, e.target.value)}>
-                                            {domainOptions.map(domain => {
-                                                return <option key={domain.id} value={domain.id}>{domain.label}</option>
-                                            })}
-                                        </select>
-                                    </td>
-                                    <td className='table__cell'>
-                                        <input type='number'
-                                               className='form__input'
-                                               value={model.domains[model.dataItems[attribute.dataItemId].domainId!].length}
-                                               disabled={true}/>
-                                    </td>
-                                </ShowIfTrue>
+                                {dataTypeSourceByAttributeId[attribute.id] === DataTypeSourceType.RAW_TYPE && <>
+                                  <td className='table__cell'>
+                                    <select className='form__input form__input--select'
+                                            value={model.dataItems[attribute.dataItemId].dataType}
+                                            onChange={e => onEntityAttributeChange(entity.id, attribute.id, attribute.dataItemId, e.target.value, model.dataItems[attribute.dataItemId].length)}>
+                                        {Object.keys(dataTypesById).map((type: string) => <option key={type}
+                                                                                                  value={type}>{getLabelForDataType(type)}</option>)}
+                                    </select>
+                                  </td>
+                                  <td className='p-2 border-t border-grey-light  text-xs'>
+                                    <input type='number'
+                                           className='form__input'
+                                           onChange={e => onEntityAttributeChange(entity.id, attribute.id, attribute.dataItemId, model.dataItems[attribute.dataItemId].dataType, parseInt(e.target.value, 10))}
+                                           value={model.dataItems[attribute.dataItemId].length}/>
+                                  </td>
+                                </>}
+                                {dataTypeSourceByAttributeId[attribute.id] === DataTypeSourceType.DOMAIN && <>
+                                  <td className='table__cell'>
+                                    <select className='form__input form__input--select'
+                                            value={model.dataItems[attribute.dataItemId].domainId}
+                                            onChange={e => onEntityAttributeDomainChange(entity.id, attribute.id, attribute.dataItemId, e.target.value)}>
+                                        {domainOptions.map(domain => {
+                                            return <option key={domain.id} value={domain.id}>{domain.label}</option>
+                                        })}
+                                    </select>
+                                  </td>
+                                  <td className='table__cell'>
+                                    <input type='number'
+                                           className='form__input'
+                                           value={model.domains[model.dataItems[attribute.dataItemId].domainId!].length}
+                                           disabled={true}/>
+                                  </td>
+                                </>}
 
                                 <td className='p-2 border-t border-grey-light text-xs'>
-                                    <input type='checkbox' checked={identifier !== undefined} onChange={e => onEntityIdentifierChange(entity.id, identifier=== undefined ? EntityIdentifierChangeAction.ATTACH : EntityIdentifierChangeAction.DETACH, identifier)}/>
+                                    <input type='checkbox' checked={identifier !== undefined}
+                                           onChange={e => onEntityIdentifierChange(entity.id, identifier === undefined ? EntityIdentifierChangeAction.ATTACH : EntityIdentifierChangeAction.DETACH, identifier)}/>
                                 </td>
                             </tr>
                         })}

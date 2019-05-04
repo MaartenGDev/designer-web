@@ -93,8 +93,6 @@ class CDMModel {
 
         dataTypeNode.data = nextDataType;
 
-        console.log(dataTypeNode)
-
         let dataTypeLengthNode = this.findChildNode(dataItem, (node) => {
             return node.nodeName === 'a:Length';
         });
@@ -108,8 +106,6 @@ class CDMModel {
         }
 
         (dataTypeLengthNode.firstChild as Text).data = nextDataTypeLength.toString();
-
-        console.log(this.getAsXml())
 
         return dataItem;
     }

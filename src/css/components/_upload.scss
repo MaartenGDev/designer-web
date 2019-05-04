@@ -1,0 +1,15 @@
+.upload-btn-wrapper{
+  @apply .inline-block .overflow-hidden .relative
+
+  &__input {
+    font-size: 100px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+  }
+
+  &__label{
+
+  }
+}

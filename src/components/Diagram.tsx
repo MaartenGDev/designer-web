@@ -65,7 +65,8 @@ class Diagram extends Component<IProps, IState> {
                 return acc;
             }, {});
 
-            const entityElements = document.querySelectorAll('.editor .entity');
+
+            const entityElements = document.querySelectorAll('.editor .entity.has-relations');
 
 
             for (let i = 0; i < entityElements.length; i++) {
@@ -83,13 +84,13 @@ class Diagram extends Component<IProps, IState> {
                 }
             }
 
-            this.diagram.draggable(entityElements, {force: false});
+            this.diagram.draggable(entityElements, {force: true});
 
             this.hasLoadedDataForDiagramAtLeastOnce = true;
         });
     }
 
-    calculateScalingFactors(model: IModel) {
+    private calculateScalingFactors(model: IModel) {
         const diagramWindow = document.querySelector('#diagram-window')!;
 
         const canvasWidth = diagramWindow.clientWidth;
@@ -112,7 +113,7 @@ class Diagram extends Component<IProps, IState> {
         return [canvasWidth / importedWidth, canvasHeight / importedHeight, leftX, topY];
     }
 
-    calculateLengthBetweenXCoordinates(number: number, leftX: number) {
+    private calculateLengthBetweenXCoordinates(number: number, leftX: number) {
         if (number < 0) {
             return number - leftX;
         }
@@ -120,7 +121,7 @@ class Diagram extends Component<IProps, IState> {
         return Math.abs(leftX) + number;
     }
 
-    calculateLengthBetweenYCoordinates(number: number, topY: number) {
+    private calculateLengthBetweenYCoordinates(number: number, topY: number) {
         if (number < 0) {
             return topY + Math.abs(number);
         }
@@ -136,7 +137,7 @@ class Diagram extends Component<IProps, IState> {
         return (
             <div id="diagramContainer" className='editor relative'>
                 {model.entities.map(entity => {
-                    return <div key={entity.id} id={entity.id} className="entity absolute bg-white shadow" style={{
+                    return <div key={entity.id} id={entity.id} className={`entity absolute bg-white shadow ${model.relations.find(x => x.from.ref === entity.id || x.to.ref === entity.id) === undefined ? '' : 'has-relations'}`} style={{
                         top: this.calculateLengthBetweenYCoordinates(entity.location.topLeft.y, topY) * heightScaleFactor,
                         left: this.calculateLengthBetweenXCoordinates(entity.location.topLeft.x, leftX) * widthScaleFactor,
                     }} onClick={e => {

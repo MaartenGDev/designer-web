@@ -38,9 +38,9 @@ class App extends Component<IProps, IState> {
     };
 
     componentDidMount() {
-        this.CDMModel.loadFromXml(data);
-
-        this.handleModelSourceChange(data);
+        // this.CDMModel.loadFromXml(data);
+        //
+        // this.handleModelSourceChange(data);
     }
 
     toggleModelInput = () => {
@@ -81,11 +81,43 @@ class App extends Component<IProps, IState> {
     };
 
     private getEditableDataForSelection = (model: IModel, selectedDataType: SelectedDataType, selectedId: string): IEntity | undefined => {
-        if(selectedDataType === SelectedDataType.NONE) return undefined;
+        if (selectedDataType === SelectedDataType.NONE) return undefined;
 
-        if(selectedDataType === SelectedDataType.ENTITY) return model.entities.find(x => x.id === selectedId);
+        if (selectedDataType === SelectedDataType.ENTITY) return model.entities.find(x => x.id === selectedId);
 
         return undefined
+    };
+
+    private downloadModel = () => {
+        const filename = 'model.cdm';
+        const data = this.CDMModel.getAsXml();
+
+        const blob = new Blob([data], {type: 'text/csv'});
+        if (window.navigator.msSaveOrOpenBlob) {
+            return window.navigator.msSaveBlob(blob, filename);
+        }
+
+        const elem = window.document.createElement('a');
+        elem.href = window.URL.createObjectURL(blob);
+        elem.download = filename;
+        document.body.appendChild(elem);
+        elem.click();
+        document.body.removeChild(elem);
+    };
+
+    private handleModelUpload = (e: {target: HTMLInputElement}) => {
+        if(e.target.files === null || e.target.files.length === 0) return;
+        const reader = new FileReader();
+
+        reader.onload = () => {
+            if(reader.result === null) return;
+            const result = reader.result.toString();
+
+            this.CDMModel.loadFromXml(result);
+            this.handleModelSourceChange(result);
+        };
+
+        reader.readAsText(e.target.files[0])
     };
 
     render() {
@@ -122,7 +154,8 @@ class App extends Component<IProps, IState> {
                         onEntityChange={this.handleEntityChange}
                         onEntityAttributeChange={this.handleEntityAttributeChange}
                         onEntityAttributeDomainChange={this.handleEntityAttributeDomainChange}
-                        onEntityIdentifierChange={e => {}}
+                        onEntityIdentifierChange={e => {
+                        }}
                       />}
                   </div>
                 </div>}
@@ -134,8 +167,20 @@ class App extends Component<IProps, IState> {
                     <div className="py-6 border-b border-grey-lighter pl-6 bg-white pr-6">
                         <div className='flex justify-between items-center'>
                             <span className="text-2xl font-bold">DesignerWeb</span>
-                            <span className="uppercase text-grey-darker font-bold cursor-pointer"
-                                  onClick={this.toggleModelInput}>View Model</span>
+                            <div className='flex items-center'>
+                                   <span
+                                       className="uppercase text-grey-darker font-bold cursor-pointer mr-6 inline-block cursor-pointer"
+                                       onClick={this.downloadModel}>Download</span>
+
+                                <div className="upload-btn-wrapper cursor-pointer">
+                                    <span
+                                        className="uppercase text-grey-darker font-bold cursor-pointer upload-btn-wrapper__label"
+                                        onClick={this.toggleModelInput}>Upload Model</span>
+                                    <input type="file" className='upload-btn-wrapper__input'
+                                           onChange={this.handleModelUpload}/>
+                                </div>
+
+                            </div>
                         </div>
                     </div>
 

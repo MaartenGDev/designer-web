@@ -68,10 +68,12 @@ const getAsJson = (model: any): IModel => {
                 id: attribute['$'].Id,
                 dataItemId: attribute['c:DataItem'][0]['o:DataItem'][0]['$'].Ref
             })),
-            identifiers: entity['c:Identifiers'][0]['o:Identifier'].map((attribute: any) => ({
-                id: attribute['$'].Id,
-                attributeId: attribute['c:Identifier.Attributes'][0]['o:EntityAttribute'][0]['$'].Ref
-            })),
+            identifiers: entity.hasOwnProperty('c:Identifiers')
+                ? entity['c:Identifiers'][0]['o:Identifier'].map((attribute: any) => ({
+                    id: attribute['$'].Id,
+                    attributeId: attribute['c:Identifier.Attributes'][0]['o:EntityAttribute'][0]['$'].Ref
+                }))
+                : [],
             location: coordinatesByEntityId[entity['$'].Id]
         })),
         domains,
