@@ -9,6 +9,7 @@ import EntityEditor from "./components/editors/EntityEditor";
 import {MdClose} from 'react-icons/md'
 import CDMModel from "./parsers/CDMModel";
 import IEntity from "./models/IEntity";
+import {DownloadHelper} from "./helpers/DownloadHelper";
 
 interface IProps {
 }
@@ -89,20 +90,9 @@ class App extends Component<IProps, IState> {
     };
 
     private downloadModel = () => {
-        const filename = 'model.cdm';
         const data = this.CDMModel.getAsXml();
 
-        const blob = new Blob([data], {type: 'text/csv'});
-        if (window.navigator.msSaveOrOpenBlob) {
-            return window.navigator.msSaveBlob(blob, filename);
-        }
-
-        const elem = window.document.createElement('a');
-        elem.href = window.URL.createObjectURL(blob);
-        elem.download = filename;
-        document.body.appendChild(elem);
-        elem.click();
-        document.body.removeChild(elem);
+        DownloadHelper.downloadAsFile('model.cdm', data)
     };
 
     private handleModelUpload = (e: {target: HTMLInputElement}) => {

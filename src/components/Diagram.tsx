@@ -24,13 +24,22 @@ class Diagram extends Component<IProps, IState> {
         const {model} = this.props;
 
         this.diagram = await this.setupDiagram();
-        this.loadDiagram(model);
+        this.loadDataForDiagram(model);
     }
 
-    componentWillReceiveProps(nextProps: Readonly<IProps>, nextContext: any): void {
+    async componentWillReceiveProps(nextProps: Readonly<IProps>, nextContext: any) {
         if(this.props.model === nextProps.model) return;
-        this.loadDiagram(nextProps.model);
+        await this.resetDiagram();
+        this.loadDataForDiagram(nextProps.model);
     }
+
+    resetDiagram = async () => {
+        this.diagram.cleanupListeners();
+        this.diagram.deleteEveryConnection();
+        this.diagram.deleteEveryEndpoint();
+
+        this.diagram = await this.setupDiagram();
+    };
 
     setupDiagram(): any {
         return new Promise((res, rej) => {
@@ -51,11 +60,8 @@ class Diagram extends Component<IProps, IState> {
         });
     }
 
-    loadDiagram(model: IModel) {
+    loadDataForDiagram(model: IModel) {
         this.diagram.batch(() => {
-            this.diagram.deleteEveryEndpoint();
-            this.diagram.deleteEveryConnection();
-
             const connections: { [key: string]: string[] } = model.relations.reduce((acc: { [key: string]: string[] }, cur) => {
                 if (!acc.hasOwnProperty(cur.from.ref)) {
                     acc[cur.from.ref] = [];
@@ -65,9 +71,7 @@ class Diagram extends Component<IProps, IState> {
                 return acc;
             }, {});
 
-
-            const entityElements = document.querySelectorAll('.editor .entity.has-relations');
-
+            const entityElements = document.querySelectorAll('.editor .entity');
 
             for (let i = 0; i < entityElements.length; i++) {
                 const sourceId = entityElements[i].id;
@@ -85,7 +89,6 @@ class Diagram extends Component<IProps, IState> {
             }
 
             this.diagram.draggable(entityElements, {force: true});
-
             this.hasLoadedDataForDiagramAtLeastOnce = true;
         });
     }
@@ -136,7 +139,7 @@ class Diagram extends Component<IProps, IState> {
 
         return (
             <div id="diagramContainer" className='editor relative'>
-                {model.entities.map(entity => {
+                {model.entities.map((entity) => {
                     return <div key={entity.id} id={entity.id} className={`entity absolute bg-white shadow ${model.relations.find(x => x.from.ref === entity.id || x.to.ref === entity.id) === undefined ? '' : 'has-relations'}`} style={{
                         top: this.calculateLengthBetweenYCoordinates(entity.location.topLeft.y, topY) * heightScaleFactor,
                         left: this.calculateLengthBetweenXCoordinates(entity.location.topLeft.x, leftX) * widthScaleFactor,
