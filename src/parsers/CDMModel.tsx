@@ -127,7 +127,7 @@ class CDMModel {
         const dataItem = this.buildBasicNode('o:DataItem', name);
 
         this.addAttributesToNode(dataItem, {
-            'a:DataType': dataType,
+            'a:DataType': dataType + length.toString(), // Don't know why they append the length to the type, can't change because the model has to be parsable by external tools.
             'a:Length': length.toString()
         });
 

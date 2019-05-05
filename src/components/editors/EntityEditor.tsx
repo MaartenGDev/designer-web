@@ -49,8 +49,12 @@ enum DataTypeSourceType {
     RAW_TYPE
 }
 
+const getDataTypeWithoutLength = (dataType: string): string => {
+    return dataType.replace(/[0-9]/g, '');
+};
+
 const getLabelForDataType = (dataType: string): string => {
-    return dataTypesById[dataType.replace(/[0-9]/g, '')]
+    return dataTypesById[getDataTypeWithoutLength(dataType)]
 };
 
 class EntityEditor extends Component<IProps, IState> {
@@ -128,7 +132,7 @@ class EntityEditor extends Component<IProps, IState> {
                             Attributes
                         </span>
                         <span className="form__label form__label--green ml-2"
-                              onClick={e => onEntityAttributeCreation(entity.id, 'attribute1', 'F', 0)}>
+                              onClick={e => onEntityAttributeCreation(entity.id, 'attribute1', 'VA', 50)}>
                             Add
                         </span>
                     </div>
@@ -158,7 +162,7 @@ class EntityEditor extends Component<IProps, IState> {
                                 {dataTypeSourceByAttributeId[attribute.id] === DataTypeSourceType.RAW_TYPE && <>
                                   <td className='table__cell'>
                                     <select className='form__input form__input--select'
-                                            value={model.dataItems[attribute.dataItemId].dataType}
+                                            value={getDataTypeWithoutLength(model.dataItems[attribute.dataItemId].dataType)}
                                             onChange={e => onEntityAttributeChange(entity.id, attribute.id, attribute.dataItemId, e.target.value, model.dataItems[attribute.dataItemId].length)}>
                                         {Object.keys(dataTypesById).map((type: string) => <option key={type}
                                                                                                   value={type}>{getLabelForDataType(type)}</option>)}
