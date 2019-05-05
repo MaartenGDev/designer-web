@@ -73,7 +73,7 @@ const getAsJson = (model: any): IModel => {
                 identifiers: entity.hasOwnProperty('c:Identifiers')
                     ? entity['c:Identifiers'][0]['o:Identifier'].map((attribute: any) => ({
                         id: attribute['$'].Id,
-                        attributeId: attribute['c:Identifier.Attributes'][0]['o:EntityAttribute'][0]['$'].Ref,
+                        attributeId: attribute.hasOwnProperty('c:Identifier.Attributes') ? attribute['c:Identifier.Attributes'][0]['o:EntityAttribute'][0]['$'].Ref : undefined,
                         isPrimary: entity.hasOwnProperty('c:PrimaryIdentifier') ? entity['c:PrimaryIdentifier'][0]['o:Identifier'][0]['$'].Ref === attribute['$'].Id : false
                     }))
                     : [],
@@ -85,11 +85,6 @@ const getAsJson = (model: any): IModel => {
         relations
     };
 };
-
-var logger = (data: any) => {
-    console.log(data)
-    return true;
-}
 
 export default (modelAsXml: string, callback: (data: IModel) => void) => {
     xmlParser.parseString(modelAsXml, (err: string, result: any) => {

@@ -137,7 +137,7 @@ class Diagram extends Component<IProps, IState> {
         if(identifier === undefined) return '';
         if(identifier.isPrimary) return '<pi>';
 
-        return '<i>';
+        return '<ai>';
     }
 
     render() {
@@ -164,7 +164,7 @@ class Diagram extends Component<IProps, IState> {
                                 {entity.attributes.map(attribute => {
                                     const identifier = entity.identifiers.find(identifier => identifier.attributeId === attribute.id);
 
-                                    return <tr key={attribute.id} className={identifier !== undefined && identifier.isPrimary ? 'primary-identifier-row' : ''}>
+                                    return <tr key={attribute.id} className={identifier === undefined ? '' : (identifier.isPrimary ? 'primary-identifier-row' : 'identifier-row')}>
                                         <td className='pr-2'>{model.dataItems[attribute.dataItemId].name}</td>
                                         <td>{this.getLabelForIdentifier(identifier)}</td>
                                         <td className='pl-2'>{model.dataItems[attribute.dataItemId].domainId === undefined ? model.dataItems[attribute.dataItemId].name : model.domains[model.dataItems[attribute.dataItemId].domainId!].name}</td>

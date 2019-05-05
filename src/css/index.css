@@ -6124,6 +6124,10 @@ table {
     margin-bottom: .5rem;
   }
 
+.form__label--green {
+      color: #38c172;
+    }
+
 .form__input {
     appearance: none;
     display: block;
@@ -6184,6 +6188,10 @@ table {
 path,
 .jtk-endpoint {
   cursor: pointer;
+}
+
+.identifier-row > td {
+  font-style: italic;
 }
 
 .primary-identifier-row > td {

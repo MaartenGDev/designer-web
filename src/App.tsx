@@ -76,6 +76,11 @@ class App extends Component<IProps, IState> {
         this.handleModelSourceChange(this.CDMModel.getAsXml());
     };
 
+    private handleEntityAttributeCreation = (entityId: string, name: string, dataType: string, length: number) => {
+        this.CDMModel.createAttributeForEntity(entityId, name, dataType, length);
+        this.handleModelSourceChange(this.CDMModel.getAsXml());
+    };
+
     private handleEntityAttributeDomainChange = (entityId: string, attributeId: string, dataItemId: string, nextDomainId: string) => {
         this.CDMModel.setDomainForDataItem(dataItemId, nextDomainId);
         this.handleModelSourceChange(this.CDMModel.getAsXml());
@@ -157,6 +162,7 @@ class App extends Component<IProps, IState> {
                         onEntityAttributeChange={this.handleEntityAttributeChange}
                         onEntityAttributeDomainChange={this.handleEntityAttributeDomainChange}
                         onEntityIdentifierChange={this.handleEntityIdentifierChange}
+                        onEntityAttributeCreation={this.handleEntityAttributeCreation}
                       />}
                   </div>
                 </div>}

@@ -1,6 +1,10 @@
 .form{
   &__label{
     @apply .block .uppercase .tracking-wide .text-grey-darker .text-xs .font-bold .mb-2;
+
+    &--green{
+      @apply .text-green;
+    }
   }
 
   &__input{

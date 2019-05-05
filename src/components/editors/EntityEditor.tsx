@@ -11,7 +11,8 @@ interface IProps {
     onEntityChange: (entityId: string, attributeName: string, value: any) => void
     onEntityAttributeDomainChange: (entityId: string, attributeId: string, dataItemId: string, nextDomainId: string) => void
     onEntityAttributeChange: (entityId: string, attributeId: string, dataItemId: string, nextDataType: string, nextDataTypeLength: number) => void
-    onEntityIdentifierChange: (entityId: string, changeAction: EntityIdentifierChangeAction, attributeId: string) => void
+    onEntityIdentifierChange: (entityId: string, changeAction: EntityIdentifierChangeAction, attributeId: string) => void,
+    onEntityAttributeCreation: (entityId: string, name: string, dataType: string, length: number) => void,
 }
 
 interface IState {
@@ -85,22 +86,22 @@ class EntityEditor extends Component<IProps, IState> {
         }))
     };
 
-    private getEntityIdentifierChangeAction(identifier: IEntityIdentifier | undefined){
-        if(identifier === undefined) return EntityIdentifierChangeAction.NONE;
-        if(identifier.isPrimary) return EntityIdentifierChangeAction.PRIMARY;
+    private getEntityIdentifierChangeAction(identifier: IEntityIdentifier | undefined) {
+        if (identifier === undefined) return EntityIdentifierChangeAction.NONE;
+        if (identifier.isPrimary) return EntityIdentifierChangeAction.PRIMARY;
 
         return EntityIdentifierChangeAction.REGULAR;
     }
 
-    private getAsEntityIdentifierChangeAction(rawValue: string){
-        if(rawValue === EntityIdentifierChangeAction.NONE.toString()) return EntityIdentifierChangeAction.NONE;
-        if(rawValue === EntityIdentifierChangeAction.PRIMARY.toString()) return EntityIdentifierChangeAction.PRIMARY;
+    private getAsEntityIdentifierChangeAction(rawValue: string) {
+        if (rawValue === EntityIdentifierChangeAction.NONE.toString()) return EntityIdentifierChangeAction.NONE;
+        if (rawValue === EntityIdentifierChangeAction.PRIMARY.toString()) return EntityIdentifierChangeAction.PRIMARY;
 
         return EntityIdentifierChangeAction.REGULAR;
     }
 
     render() {
-        const {entity, model, onEntityChange, onEntityAttributeDomainChange, onEntityIdentifierChange, onEntityAttributeChange} = this.props;
+        const {entity, model, onEntityChange, onEntityAttributeDomainChange, onEntityIdentifierChange, onEntityAttributeChange, onEntityAttributeCreation} = this.props;
         const dataTypeSourceByAttributeId: { [key: string]: DataTypeSourceType } = this.state.dataTypeSourceByAttributeId;
 
         const domainOptions = Object.values(model.domains).map(domain => ({
@@ -121,10 +122,14 @@ class EntityEditor extends Component<IProps, IState> {
                         onChange={e => onEntityChange(entity.id, 'a:Name', e.target.value)}/>
                 </div>
                 <div className="w-full mt-6">
-                    <label className="form__label" htmlFor="form-input-name">
-                        Attributes
-                    </label>
-
+                    <div className='flex'>
+                        <span className="form__label">
+                            Attributes
+                        </span>
+                        <span className="form__label form__label--green ml-2" onClick={e => onEntityAttributeCreation(entity.id, 'attribute1', 'F', 0)}>
+                            Add
+                        </span>
+                    </div>
                     <table className='w-full text-left table-collapse'>
                         <tbody className='align-baseline'>
                         <tr>
@@ -182,7 +187,9 @@ class EntityEditor extends Component<IProps, IState> {
                                 </>}
 
                                 <td className='p-2 border-t border-grey-light text-xs'>
-                                    <select value={this.getEntityIdentifierChangeAction(identifier)} className='form__input form__input--select' onChange={e => onEntityIdentifierChange(entity.id, this.getAsEntityIdentifierChangeAction(e.target.value), attribute.id)}>
+                                    <select value={this.getEntityIdentifierChangeAction(identifier)}
+                                            className='form__input form__input--select'
+                                            onChange={e => onEntityIdentifierChange(entity.id, this.getAsEntityIdentifierChangeAction(e.target.value), attribute.id)}>
                                         <option value={EntityIdentifierChangeAction.NONE}>None</option>
                                         <option value={EntityIdentifierChangeAction.REGULAR}>Regular</option>
                                         <option value={EntityIdentifierChangeAction.PRIMARY}>Primary</option>

@@ -16,6 +16,10 @@ path, .jtk-endpoint {
   cursor: pointer;
 }
 
+.identifier-row > td{
+  font-style: italic;
+}
+
 .primary-identifier-row > td{
   text-decoration: underline;
   font-weight: bold;

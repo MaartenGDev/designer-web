@@ -1,4 +1,6 @@
 import {DOMParser, XMLSerializer} from 'xmldom'
+import uid from 'uuid/v4';
+
 class CDMModel {
     private document: Document = new Document();
 
@@ -109,9 +111,41 @@ class CDMModel {
         return dataItem;
     }
 
-    private findIdentifierReferencingAttributeId(identifiersNode: Node, attributeId: string){
+    createAttributeForEntity(entityId: string, name: string, dataType: string, length: number): Element {
+        const entity = this.findEntity(entityId);
+        let attributesNode = this.findChildNode(entity, node => node.nodeName === 'c:Attributes');
+
+        if (attributesNode === undefined) {
+            attributesNode = this.document.createElement('c:Attributes');
+            entity.appendChild(attributesNode);
+        }
+
+        const attributeNode = this.buildBasicNode('o:EntityAttribute', name);
+        attributesNode.appendChild(attributeNode);
+
+        const dataItemsNode = this.findNode('c:DataItems');
+        const dataItem = this.buildBasicNode('o:DataItem', name);
+
+        this.addAttributesToNode(dataItem, {
+            'a:DataType': dataType,
+            'a:Length': length.toString()
+        });
+
+        dataItemsNode.appendChild(dataItem);
+
+        const entityAttributeDataItemNode = this.document.createElement('c:DataItem');
+        const entityAttributeDataItemRef = this.document.createElement('o:DataItem');
+
+        entityAttributeDataItemRef.setAttribute("Ref", dataItem.getAttribute('Id')!);
+        entityAttributeDataItemNode.appendChild(entityAttributeDataItemRef);
+        attributeNode.appendChild(entityAttributeDataItemNode);
+
+        return entity;
+    }
+
+    private findIdentifierReferencingAttributeId(identifiersNode: Node, attributeId: string) {
         return this.findChildNode(identifiersNode, (node) => {
-            if(node.nodeName !== 'o:Identifier') return false;
+            if (node.nodeName !== 'o:Identifier') return false;
             const identifierReferencingAttributeId = this.findChildNode(this.findChildNode(node, node => node.nodeName === 'c:Identifier.Attributes'), node => node.nodeName === 'o:EntityAttribute' && (node as Element).getAttribute('Ref') === attributeId);
 
             return identifierReferencingAttributeId !== undefined
@@ -123,7 +157,7 @@ class CDMModel {
         const identifiers = this.findChildNode(entity, (node) => node.nodeName === 'c:Identifiers');
 
         const primaryIdentifierNode = this.findChildNode(entity, (node) => node.nodeName === 'c:PrimaryIdentifier');
-        const primaryIdentifierRefNode = this.findChildNode(primaryIdentifierNode, (node) => node.nodeName === 'o:Identifier' && (node as Element).getAttribute('Ref') === attributeIdUsedForIdentifier);
+        const primaryIdentifierRefNode = primaryIdentifierNode === undefined ? undefined : this.findChildNode(primaryIdentifierNode, (node) => node.nodeName === 'o:Identifier' && (node as Element).getAttribute('Ref') === attributeIdUsedForIdentifier);
 
         const identifierNode = this.findIdentifierReferencingAttributeId(identifiers, attributeIdUsedForIdentifier);
 
@@ -131,7 +165,7 @@ class CDMModel {
             identifiers.removeChild(identifierNode);
         }
 
-        if(primaryIdentifierRefNode === undefined){
+        if (primaryIdentifierNode !== undefined && primaryIdentifierRefNode === undefined) {
             entity.removeChild(primaryIdentifierNode);
         }
 
@@ -152,14 +186,14 @@ class CDMModel {
         let primaryIdentifierNode = this.findChildNode(entity, (node) => node.nodeName === 'c:PrimaryIdentifier');
         let primaryIdentifierRefNode = primaryIdentifierNode === undefined ? undefined : this.findChildNode(primaryIdentifierNode, (node) => node.nodeName === 'o:Identifier');
 
-        const identifierId = 'oSHOULDFIX';
+        const identifierId = this.getNextUniqueId();
 
-        if(identifiers === undefined){
+        if (identifiers === undefined) {
             identifiers = this.document.createElement('c:Identifiers');
             entity.appendChild(identifiers);
         }
 
-        if(primaryIdentifierNode === undefined && isPrimaryIdentifier){
+        if (primaryIdentifierNode === undefined && isPrimaryIdentifier) {
             primaryIdentifierNode = this.document.createElement('c:PrimaryIdentifier');
             primaryIdentifierRefNode = this.document.createElement('o:Identifier');
             primaryIdentifierNode.appendChild(primaryIdentifierRefNode);
@@ -168,41 +202,27 @@ class CDMModel {
 
         const identifierReferencingAttributeId = this.findIdentifierReferencingAttributeId(identifiers, attributeIdUsedForIdentifier);
 
-        if(isPrimaryIdentifier && primaryIdentifierRefNode !== undefined){
+        if (isPrimaryIdentifier && primaryIdentifierRefNode !== undefined) {
             primaryIdentifierRefNode.setAttribute('Ref', identifierReferencingAttributeId === undefined ? identifierId : identifierReferencingAttributeId.getAttribute('Id')!);
         }
 
-        if(identifierReferencingAttributeId !== undefined){
+        if (identifierReferencingAttributeId !== undefined) {
             const identifierIsCurrentlyThePrimaryIdentifier = primaryIdentifierNode !== undefined && primaryIdentifierRefNode !== undefined && primaryIdentifierRefNode.getAttribute('Ref') === identifierReferencingAttributeId.getAttribute('Id');
 
-            if(!isPrimaryIdentifier && identifierIsCurrentlyThePrimaryIdentifier){
+            if (!isPrimaryIdentifier && identifierIsCurrentlyThePrimaryIdentifier) {
                 entity.removeChild(primaryIdentifierNode);
             }
 
             return entity;
         }
 
-        const identifierNode =  this.document.createElement('o:Identifier');
-        identifierNode.setAttribute('Id', identifierId); // TODO: implement id generator logic
 
-
-        const uidAttribute = this.document.createElement('a:ObjectID');
-        uidAttribute.appendChild(this.document.createTextNode('114ACC4B-ADEA-4F85-8058-0C0F16DD0A62')); // TODO: implement uid generator logic
-
-        const nameAttribute = this.document.createElement('a:Name');
-        nameAttribute.appendChild(this.document.createTextNode('Identifier_' + attributeIdUsedForIdentifier));
-
-        const codeAttribute = this.document.createElement('a:Code');
-        codeAttribute.appendChild(this.document.createTextNode('Identifier_' + attributeIdUsedForIdentifier));
-
-        identifierNode.appendChild(uidAttribute);
-        identifierNode.appendChild(nameAttribute);
-        identifierNode.appendChild(codeAttribute);
+        const identifierNode = this.buildBasicNode('o:Identifier', 'Identifier_' + attributeIdUsedForIdentifier, identifierId);
 
         const identifierAttributesNode = this.document.createElement('c:Identifier.Attributes');
         const attributeRefNode = this.document.createElement('o:EntityAttribute');
-
         attributeRefNode.setAttribute('Ref', attributeIdUsedForIdentifier);
+
         identifierAttributesNode.appendChild(attributeRefNode);
         identifierNode.appendChild(identifierAttributesNode);
 
@@ -211,9 +231,43 @@ class CDMModel {
         return entity;
     }
 
+    private buildBasicNode(nodeName: string, name: string, identifierId?: string, code?: string) {
+        const node = this.document.createElement(nodeName);
+        node.setAttribute('Id', identifierId === undefined ? this.getNextUniqueId() : identifierId);
+
+        this.addAttributesToNode(node, {
+            'a:ObjectID': uid().toUpperCase(),
+            'a:CreationDate': '1556190897',
+            'a:Creator': 'webversion',
+            'a:ModificationDate': '1556190923',
+            'a:Modifier': 'webversion',
+            'a:Name': name,
+            'a:Code': code || name
+        });
+
+        return node;
+    }
+
+    private addAttributesToNode(node: Node, attributes: { [key: string]: string }) {
+        for (let attributeName in attributes) {
+            const attributeNode = this.document.createElement(attributeName);
+            attributeNode.appendChild(this.document.createTextNode(attributes[attributeName]));
+
+            node.appendChild(attributeNode);
+        }
+    }
+
 
     getAsXml() {
         return new XMLSerializer().serializeToString(this.document.documentElement);
+    }
+
+    private getNextUniqueId() {
+        const idPattern = /Id="o([0-9]+)"/g;
+        const ids = (this.getAsXml().match(idPattern) || []).map(x => parseInt(x.replace(idPattern, '$1')));
+        const nextId = Math.max(...ids) + 1;
+
+        return 'o' + nextId;
     }
 }
 
