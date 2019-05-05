@@ -82,11 +82,16 @@ class App extends Component<IProps, IState> {
         this.handleModelSourceChange(this.CDMModel.getAsXml());
     };
 
-    private handleEntityIdentifierChange = (entityId: string, changeAction: EntityIdentifierChangeAction, identifier: IEntityIdentifier | undefined) => {
+    private handleEntityIdentifierChange = (entityId: string, changeAction: EntityIdentifierChangeAction, attributeId: string) => {
         if (changeAction === EntityIdentifierChangeAction.DETACH) {
-            this.CDMModel.removeIdentifierForEntity(entityId, identifier!);
-            this.handleModelSourceChange(this.CDMModel.getAsXml());
+            this.CDMModel.removeIdentifierForEntity(entityId, attributeId!);
         }
+
+        if (changeAction === EntityIdentifierChangeAction.ATTACH) {
+            this.CDMModel.addIdentifierForEntity(entityId, attributeId!);
+        }
+
+        this.handleModelSourceChange(this.CDMModel.getAsXml());
     };
 
     private getEditableDataForSelection = (model: IModel, selectedDataType: SelectedDataType, selectedId: string): IEntity | undefined => {

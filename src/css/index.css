@@ -6160,9 +6160,9 @@ table {
   }
 
 .upload-btn-wrapper {
-  position: relative;
-  overflow: hidden;
   display: inline-block;
+  overflow: hidden;
+  position: relative;
 }
 
 .upload-btn-wrapper__input {
@@ -6171,9 +6171,6 @@ table {
     left: 0;
     top: 0;
     opacity: 0;
-  }
-
-.upload-btn-wrapper__label {
   }
 
 .jtk-connector {

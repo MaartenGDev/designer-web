@@ -3,7 +3,6 @@ import IEntity from "../../models/IEntity";
 import IModel from "../../models/IModel";
 import IEntityAttribute from "../../models/IEntityAttribute";
 import {EntityIdentifierChangeAction} from "../../models/EntityIdentifierChangeAction";
-import IEntityIdentifier from "../../models/IEntityIdentifier";
 
 interface IProps {
     entity: IEntity,
@@ -11,7 +10,7 @@ interface IProps {
     onEntityChange: (entityId: string, attributeName: string, value: any) => void
     onEntityAttributeDomainChange: (entityId: string, attributeId: string, dataItemId: string, nextDomainId: string) => void
     onEntityAttributeChange: (entityId: string, attributeId: string, dataItemId: string, nextDataType: string, nextDataTypeLength: number) => void
-    onEntityIdentifierChange: (entityId: string, changeAction: EntityIdentifierChangeAction, identifier: IEntityIdentifier | undefined) => void
+    onEntityIdentifierChange: (entityId: string, changeAction: EntityIdentifierChangeAction, attributeId: string) => void
 }
 
 interface IState {
@@ -169,7 +168,7 @@ class EntityEditor extends Component<IProps, IState> {
 
                                 <td className='p-2 border-t border-grey-light text-xs'>
                                     <input type='checkbox' checked={identifier !== undefined}
-                                           onChange={e => onEntityIdentifierChange(entity.id, identifier === undefined ? EntityIdentifierChangeAction.ATTACH : EntityIdentifierChangeAction.DETACH, identifier)}/>
+                                           onChange={e => onEntityIdentifierChange(entity.id, identifier === undefined ? EntityIdentifierChangeAction.ATTACH : EntityIdentifierChangeAction.DETACH, attribute.id)}/>
                                 </td>
                             </tr>
                         })}
