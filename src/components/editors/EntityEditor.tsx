@@ -13,6 +13,7 @@ interface IProps {
     onEntityAttributeChange: (entityId: string, attributeId: string, dataItemId: string, nextDataType: string, nextDataTypeLength: number) => void
     onEntityIdentifierChange: (entityId: string, changeAction: EntityIdentifierChangeAction, attributeId: string) => void,
     onEntityAttributeCreation: (entityId: string, name: string, dataType: string, length: number) => void,
+    onEntityAttributeRemoval: (entityId: string, attributeId: string) => void,
 }
 
 interface IState {
@@ -101,7 +102,7 @@ class EntityEditor extends Component<IProps, IState> {
     }
 
     render() {
-        const {entity, model, onEntityChange, onEntityAttributeDomainChange, onEntityIdentifierChange, onEntityAttributeChange, onEntityAttributeCreation} = this.props;
+        const {entity, model, onEntityChange, onEntityAttributeDomainChange, onEntityIdentifierChange, onEntityAttributeChange, onEntityAttributeCreation, onEntityAttributeRemoval} = this.props;
         const dataTypeSourceByAttributeId: { [key: string]: DataTypeSourceType } = this.state.dataTypeSourceByAttributeId;
 
         const domainOptions = Object.values(model.domains).map(domain => ({
@@ -126,7 +127,8 @@ class EntityEditor extends Component<IProps, IState> {
                         <span className="form__label">
                             Attributes
                         </span>
-                        <span className="form__label form__label--green ml-2" onClick={e => onEntityAttributeCreation(entity.id, 'attribute1', 'F', 0)}>
+                        <span className="form__label form__label--green ml-2"
+                              onClick={e => onEntityAttributeCreation(entity.id, 'attribute1', 'F', 0)}>
                             Add
                         </span>
                     </div>
@@ -138,6 +140,7 @@ class EntityEditor extends Component<IProps, IState> {
                             <th className='table__header'>Data type</th>
                             <th className='table__header'>Length</th>
                             <th className='table__header'>Identifier</th>
+                            <th className='table__header'>Remove</th>
                         </tr>
                         {entity.attributes.map(attribute => {
                             const identifier = entity.identifiers.find(identifier => identifier.attributeId === attribute.id);
@@ -186,7 +189,7 @@ class EntityEditor extends Component<IProps, IState> {
                                   </td>
                                 </>}
 
-                                <td className='p-2 border-t border-grey-light text-xs'>
+                                <td className='table__cell'>
                                     <select value={this.getEntityIdentifierChangeAction(identifier)}
                                             className='form__input form__input--select'
                                             onChange={e => onEntityIdentifierChange(entity.id, this.getAsEntityIdentifierChangeAction(e.target.value), attribute.id)}>
@@ -194,6 +197,10 @@ class EntityEditor extends Component<IProps, IState> {
                                         <option value={EntityIdentifierChangeAction.REGULAR}>Regular</option>
                                         <option value={EntityIdentifierChangeAction.PRIMARY}>Primary</option>
                                     </select>
+                                </td>
+                                <td className="table__cell">
+                                        <span className="form__label form__label--red ml-2"
+                                              onClick={e => onEntityAttributeRemoval(entity.id, attribute.id)}>Remove</span>
                                 </td>
                             </tr>
                         })}

@@ -6128,6 +6128,10 @@ table {
       color: #38c172;
     }
 
+.form__label--red {
+      color: #e3342f;
+    }
+
 .form__input {
     appearance: none;
     display: block;

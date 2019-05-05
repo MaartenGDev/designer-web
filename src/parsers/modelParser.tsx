@@ -66,10 +66,12 @@ const getAsJson = (model: any): IModel => {
                 id: entity['$'].Id,
                 uid: entity['a:ObjectID'][0],
                 name: entity['a:Name'][0],
-                attributes: entity['c:Attributes'][0]['o:EntityAttribute'].map((attribute: any) => ({
-                    id: attribute['$'].Id,
-                    dataItemId: attribute['c:DataItem'][0]['o:DataItem'][0]['$'].Ref
-                })),
+                attributes: entity.hasOwnProperty('c:Attributes')
+                    ? entity['c:Attributes'][0]['o:EntityAttribute'].map((attribute: any) => ({
+                        id: attribute['$'].Id,
+                        dataItemId: attribute['c:DataItem'][0]['o:DataItem'][0]['$'].Ref
+                    }))
+                    : [],
                 identifiers: entity.hasOwnProperty('c:Identifiers')
                     ? entity['c:Identifiers'][0]['o:Identifier'].map((attribute: any) => ({
                         id: attribute['$'].Id,

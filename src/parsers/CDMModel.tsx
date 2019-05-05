@@ -143,6 +143,24 @@ class CDMModel {
         return entity;
     }
 
+    removeAttributeForEntity(entityId: string, attributeId: string) {
+        const entity = this.findEntity(entityId);
+        const attributesNode = this.findChildNode(entity, node => node.nodeName === 'c:Attributes');
+
+        const attributeNode = this.findChildNode(attributesNode, node => node.nodeName === 'o:EntityAttribute' && (node as Element).getAttribute('Id') === attributeId)
+        attributesNode.removeChild(attributeNode);
+
+        // Try to find a leftover attribute
+        const leftOverAttributeNode = this.findChildNode(attributesNode, (node) => node.nodeName === 'o:EntityAttribute');
+
+        // Remove attributes element if there are no identifiers left.
+        if (leftOverAttributeNode === undefined) {
+            entity.removeChild(attributesNode);
+        }
+
+        return entity;
+    }
+
     private findIdentifierReferencingAttributeId(identifiersNode: Node, attributeId: string) {
         return this.findChildNode(identifiersNode, (node) => {
             if (node.nodeName !== 'o:Identifier') return false;
@@ -256,7 +274,6 @@ class CDMModel {
             node.appendChild(attributeNode);
         }
     }
-
 
     getAsXml() {
         return new XMLSerializer().serializeToString(this.document.documentElement);

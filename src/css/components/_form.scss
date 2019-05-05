@@ -5,6 +5,10 @@
     &--green{
       @apply .text-green;
     }
+
+    &--red{
+      @apply .text-red;
+    }
   }
 
   &__input{
