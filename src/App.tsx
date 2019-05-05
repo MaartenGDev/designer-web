@@ -10,7 +10,6 @@ import CDMModel from "./parsers/CDMModel";
 import IEntity from "./models/IEntity";
 import {DownloadHelper} from "./helpers/DownloadHelper";
 import {EntityIdentifierChangeAction} from "./models/EntityIdentifierChangeAction";
-import IEntityIdentifier from "./models/IEntityIdentifier";
 
 interface IProps {
 }
@@ -83,12 +82,12 @@ class App extends Component<IProps, IState> {
     };
 
     private handleEntityIdentifierChange = (entityId: string, changeAction: EntityIdentifierChangeAction, attributeId: string) => {
-        if (changeAction === EntityIdentifierChangeAction.DETACH) {
-            this.CDMModel.removeIdentifierForEntity(entityId, attributeId!);
+        if (changeAction === EntityIdentifierChangeAction.NONE) {
+            this.CDMModel.removeIdentifierForEntity(entityId, attributeId);
         }
 
-        if (changeAction === EntityIdentifierChangeAction.ATTACH) {
-            this.CDMModel.addIdentifierForEntity(entityId, attributeId!);
+        if (changeAction === EntityIdentifierChangeAction.REGULAR || changeAction === EntityIdentifierChangeAction.PRIMARY) {
+            this.CDMModel.addIdentifierForEntity(entityId, attributeId, changeAction === EntityIdentifierChangeAction.PRIMARY);
         }
 
         this.handleModelSourceChange(this.CDMModel.getAsXml());

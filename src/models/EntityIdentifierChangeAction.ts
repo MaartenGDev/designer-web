@@ -1,4 +1,5 @@
 export enum EntityIdentifierChangeAction {
-    ATTACH,
-    DETACH
+    NONE,
+    REGULAR,
+    PRIMARY,
 }

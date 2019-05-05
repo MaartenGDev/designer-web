@@ -3,6 +3,7 @@ import IEntity from "../../models/IEntity";
 import IModel from "../../models/IModel";
 import IEntityAttribute from "../../models/IEntityAttribute";
 import {EntityIdentifierChangeAction} from "../../models/EntityIdentifierChangeAction";
+import IEntityIdentifier from "../../models/IEntityIdentifier";
 
 interface IProps {
     entity: IEntity,
@@ -83,6 +84,20 @@ class EntityEditor extends Component<IProps, IState> {
             }
         }))
     };
+
+    private getEntityIdentifierChangeAction(identifier: IEntityIdentifier | undefined){
+        if(identifier === undefined) return EntityIdentifierChangeAction.NONE;
+        if(identifier.isPrimary) return EntityIdentifierChangeAction.PRIMARY;
+
+        return EntityIdentifierChangeAction.REGULAR;
+    }
+
+    private getAsEntityIdentifierChangeAction(rawValue: string){
+        if(rawValue === EntityIdentifierChangeAction.NONE.toString()) return EntityIdentifierChangeAction.NONE;
+        if(rawValue === EntityIdentifierChangeAction.PRIMARY.toString()) return EntityIdentifierChangeAction.PRIMARY;
+
+        return EntityIdentifierChangeAction.REGULAR;
+    }
 
     render() {
         const {entity, model, onEntityChange, onEntityAttributeDomainChange, onEntityIdentifierChange, onEntityAttributeChange} = this.props;
@@ -167,8 +182,11 @@ class EntityEditor extends Component<IProps, IState> {
                                 </>}
 
                                 <td className='p-2 border-t border-grey-light text-xs'>
-                                    <input type='checkbox' checked={identifier !== undefined}
-                                           onChange={e => onEntityIdentifierChange(entity.id, identifier === undefined ? EntityIdentifierChangeAction.ATTACH : EntityIdentifierChangeAction.DETACH, attribute.id)}/>
+                                    <select value={this.getEntityIdentifierChangeAction(identifier)} className='form__input form__input--select' onChange={e => onEntityIdentifierChange(entity.id, this.getAsEntityIdentifierChangeAction(e.target.value), attribute.id)}>
+                                        <option value={EntityIdentifierChangeAction.NONE}>None</option>
+                                        <option value={EntityIdentifierChangeAction.REGULAR}>Regular</option>
+                                        <option value={EntityIdentifierChangeAction.PRIMARY}>Primary</option>
+                                    </select>
                                 </td>
                             </tr>
                         })}

@@ -63,26 +63,33 @@ const getAsJson = (model: any): IModel => {
     return {
         entities: entities.map((entity: any) => {
             return {
-            id: entity['$'].Id,
-            uid: entity['a:ObjectID'][0],
-            name: entity['a:Name'][0],
-            attributes: entity['c:Attributes'][0]['o:EntityAttribute'].map((attribute: any) => ({
-                id: attribute['$'].Id,
-                dataItemId: attribute['c:DataItem'][0]['o:DataItem'][0]['$'].Ref
-            })),
-            identifiers: entity.hasOwnProperty('c:Identifiers')
-                ? entity['c:Identifiers'][0]['o:Identifier'].map((attribute: any) => ({
+                id: entity['$'].Id,
+                uid: entity['a:ObjectID'][0],
+                name: entity['a:Name'][0],
+                attributes: entity['c:Attributes'][0]['o:EntityAttribute'].map((attribute: any) => ({
                     id: attribute['$'].Id,
-                    attributeId: attribute['c:Identifier.Attributes'][0]['o:EntityAttribute'][0]['$'].Ref
-                }))
-                : [],
-            location: coordinatesByEntityId[entity['$'].Id]
-        }}),
+                    dataItemId: attribute['c:DataItem'][0]['o:DataItem'][0]['$'].Ref
+                })),
+                identifiers: entity.hasOwnProperty('c:Identifiers')
+                    ? entity['c:Identifiers'][0]['o:Identifier'].map((attribute: any) => ({
+                        id: attribute['$'].Id,
+                        attributeId: attribute['c:Identifier.Attributes'][0]['o:EntityAttribute'][0]['$'].Ref,
+                        isPrimary: entity.hasOwnProperty('c:PrimaryIdentifier') ? entity['c:PrimaryIdentifier'][0]['o:Identifier'][0]['$'].Ref === attribute['$'].Id : false
+                    }))
+                    : [],
+                location: coordinatesByEntityId[entity['$'].Id]
+            }
+        }),
         domains,
         dataItems,
         relations
     };
 };
+
+var logger = (data: any) => {
+    console.log(data)
+    return true;
+}
 
 export default (modelAsXml: string, callback: (data: IModel) => void) => {
     xmlParser.parseString(modelAsXml, (err: string, result: any) => {

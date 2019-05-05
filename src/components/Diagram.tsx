@@ -3,6 +3,7 @@ import {Connection, jsPlumb, OnConnectionBindInfo} from 'jsplumb';
 import IModel from "../models/IModel";
 import EndpointFactory from "../helpers/EndpointFactory";
 import {SelectedDataType} from "../models/SelectedDataType";
+import IEntityIdentifier from "../models/IEntityIdentifier";
 
 interface IProps {
     model: IModel,
@@ -132,6 +133,13 @@ class Diagram extends Component<IProps, IState> {
         return topY - number;
     }
 
+    private getLabelForIdentifier(identifier: IEntityIdentifier | undefined){
+        if(identifier === undefined) return '';
+        if(identifier.isPrimary) return '<pi>';
+
+        return '<i>';
+    }
+
     render() {
         const {model, onModelSelectionChange} = this.props;
 
@@ -154,11 +162,11 @@ class Diagram extends Component<IProps, IState> {
                             <table className='text-sm'>
                                 <tbody>
                                 {entity.attributes.map(attribute => {
-                                    const isIdentifier = entity.identifiers.some(identifier => identifier.attributeId === attribute.id);
+                                    const identifier = entity.identifiers.find(identifier => identifier.attributeId === attribute.id);
 
-                                    return <tr key={attribute.id} className={isIdentifier ? 'primary-identifier-row' : ''}>
+                                    return <tr key={attribute.id} className={identifier !== undefined && identifier.isPrimary ? 'primary-identifier-row' : ''}>
                                         <td className='pr-2'>{model.dataItems[attribute.dataItemId].name}</td>
-                                        <td>{isIdentifier ? '<pi>' : ''}</td>
+                                        <td>{this.getLabelForIdentifier(identifier)}</td>
                                         <td className='pl-2'>{model.dataItems[attribute.dataItemId].domainId === undefined ? model.dataItems[attribute.dataItemId].name : model.domains[model.dataItems[attribute.dataItemId].domainId!].name}</td>
                                     </tr>
                                 })}
