@@ -88,17 +88,17 @@ class Diagram extends Component<IProps, IState> {
                         const sourceElem = document.querySelector('.entity-' + sourceId)!;
                         const targetElem = document.querySelector('.entity-' + targetId)!;
                         const connectionsToSameEntity = connected.filter(id => id === targetId).length;
-                        const offset = index - connected.findIndex(x => x === targetId);
+                        const matchIndex = index - connected.findIndex(x => x === targetId);
                         let  direction = AnchorDirection.FLOW;
 
                         if(connectionsToSameEntity >= 2){
-                            direction = offset === 0 ? AnchorDirection.BOTTOM : (offset === 1 ? AnchorDirection.TOP : AnchorDirection.FLOW)
+                            direction = matchIndex === 0 ? AnchorDirection.BOTTOM : (matchIndex === 1 ? AnchorDirection.TOP : AnchorDirection.FLOW)
                         }
 
 
                         this.diagram.connect({
-                            source: this.diagram.addEndpoint(sourceElem, EndpointFactory.create(model), {anchor: EndpointFactory.getAnchorPoints(direction)}),
-                            target: this.diagram.addEndpoint(targetElem, EndpointFactory.create(model), {anchor: EndpointFactory.getAnchorPoints(direction)}),
+                            source: this.diagram.addEndpoint(sourceElem, EndpointFactory.create(model, matchIndex), {anchor: EndpointFactory.getAnchorPoints(direction)}),
+                            target: this.diagram.addEndpoint(targetElem, EndpointFactory.create(model, matchIndex), {anchor: EndpointFactory.getAnchorPoints(direction)}),
                         });
                     });
                 }

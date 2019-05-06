@@ -4,7 +4,7 @@ import {AnchorDirection} from "../models/AnchorDirection";
 
 class EndpointFactory {
     static getAnchorPoints(direction: AnchorDirection = AnchorDirection.FLOW) {
-        const flowDirection = direction === AnchorDirection.TOP ? -1 : (direction === AnchorDirection.BOTTOM ? 1 : 0);
+        const flowDirection = direction === AnchorDirection.TOP ? -0.2 : (direction === AnchorDirection.BOTTOM ? 0.2 : 0);
 
         return [
             [0.2, 0, flowDirection,0,  0, 0],
@@ -25,12 +25,12 @@ class EndpointFactory {
         ];
     }
 
-    private static buildCardinalityTag(component: any, model: IModel, useFrom: boolean) {
+    private static buildCardinalityTag(component: any, model: IModel, matchIndex: number, useFrom: boolean) {
         const {source, target} = component;
         const sourceId = source.dataset.customId;
         const targetId = target.dataset.customId;
 
-        const relation = model.relations.find(x => x.from.ref === sourceId && x.to.ref === targetId);
+        const relation = model.relations.filter(x => x.from.ref === sourceId && x.to.ref === targetId)[matchIndex];
 
         if (relation === undefined) {
             return null;
@@ -43,12 +43,12 @@ class EndpointFactory {
     }
 
 
-    private static buildRelationName(component: any, model: IModel) {
+    private static buildRelationName(component: any, model: IModel, matchIndex: number) {
         const {source, target} = component;
         const sourceId = source.dataset.customId;
         const targetId = target.dataset.customId;
 
-        const relation = model.relations.find(x => x.from.ref === sourceId && x.to.ref === targetId);
+        const relation = model.relations.filter(x => x.from.ref === sourceId && x.to.ref === targetId)[matchIndex];
 
         if (relation === undefined) {
             return null;
@@ -60,7 +60,7 @@ class EndpointFactory {
         return elem;
     }
 
-    static create(model: IModel): any {
+    static create(model: IModel, matchIndex: number): any {
         const lineColor = '#30364c';
         const connector = ['Bezier', {cssClass: 'connectorClass', hoverClass: 'connectorHoverClass', curviness: 100}]
         const connectorStyle = {
@@ -72,17 +72,19 @@ class EndpointFactory {
         };
         const overlays = [
             ['Custom', {
-                create: (component: any) => this.buildCardinalityTag(component, model, true),
+                create: (component: any) => {
+                    return this.buildCardinalityTag(component, model, matchIndex,true)
+                },
                 location: 0.1,
                 id: 'fromCardinalityOverlay'
             }],
             ['Custom', {
-                create: (component: any) => this.buildCardinalityTag(component, model, false),
+                create: (component: any) => this.buildCardinalityTag(component, model,matchIndex, false),
                 location: 0.9,
                 id: 'toCardinalityOverlay'
             }],
             ['Custom', {
-                create: (component: any) => this.buildRelationName(component, model),
+                create: (component: any) => this.buildRelationName(component, model, matchIndex),
                 location: 0.5,
                 id: 'relationName'
             }]
