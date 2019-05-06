@@ -37,7 +37,7 @@ class EndpointFactory {
 
 
 
-    private static buildRelationName(component: any, model: IModel, useFrom: boolean) {
+    private static buildRelationName(component: any, model: IModel) {
         const {sourceId, targetId} = component;
         const relation = model.relations.find(x => x.from.ref === sourceId && x.to.ref === targetId);
 
@@ -46,7 +46,7 @@ class EndpointFactory {
         }
 
         const elem = document.createElement('div');
-        elem.classList.add('tag', 'z-10');
+        elem.classList.add('tag', 'z-10', 'hidden', 'relation-name');
         elem.innerHTML = `<p>${relation.name}</p>`;
         return elem;
     }
@@ -73,7 +73,7 @@ class EndpointFactory {
                 id: 'toCardinalityOverlay'
             }],
             ['Custom', {
-                create: (component: any) => this.buildRelationName(component, model, false),
+                create: (component: any) => this.buildRelationName(component, model),
                 location: 0.5,
                 id: 'relationName'
             }]

@@ -6099,7 +6099,6 @@ table {
 }
 
 .tag {
-  display: inline-block;
   background-color: #f1f5f8;
   border-radius: 9999px;
   padding-left: .75rem;
@@ -6201,6 +6200,10 @@ path,
 .primary-identifier-row > td {
   text-decoration: underline;
   font-weight: bold;
+}
+
+.relation-name.jtk-hover {
+  display: inline-block;
 }
 
 @media (min-width: 576px) {
