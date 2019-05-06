@@ -94,11 +94,17 @@ class App extends Component<IProps, IState> {
     private handleDomainChange = (domainId: string, name: string, dataType: string, length: number) => {
         this.CDMModel.setDataTypeAndLengthForDomain(domainId, name, dataType, length);
         this.handleModelSourceChange(this.CDMModel.getAsXml());
-    }
+    };
 
-    private handleDomainRemoval(domainId: string){
+    private handleDomainRemoval = (domainId: string) => {
+        this.CDMModel.removeDomain(domainId);
+        this.handleModelSourceChange(this.CDMModel.getAsXml());
+    };
 
-    }
+    private handleDomainCreation = (name: string, dataType: string, length: number) => {
+        this.CDMModel.createDomain(name, dataType, length);
+        this.handleModelSourceChange(this.CDMModel.getAsXml());
+    };
 
     private getEditableDataForSelection = (model: IModel, selectedDataType: SelectedDataType, selectedId: string): IEntity | undefined => {
         if (selectedDataType === SelectedDataType.NONE) return undefined;
@@ -158,8 +164,13 @@ class App extends Component<IProps, IState> {
                       />}
 
                       {selectedDataType === SelectedDataType.DOMAINS &&
-                        <DomainsEditor domains={Object.values(model.domains)} model={model} onDomainChange={this.handleDomainChange} onDomainRemoval={this.handleDomainRemoval} />
-                      }
+                      <DomainsEditor
+                        domains={Object.values(model.domains)}
+                        model={model}
+                        onDomainChange={this.handleDomainChange}
+                        onDomainRemoval={this.handleDomainRemoval}
+                        onDomainCreation={this.handleDomainCreation}
+                      />}
                   </div>
                 </div>}
 
@@ -173,13 +184,13 @@ class App extends Component<IProps, IState> {
                                 <span className="text-2xl font-bold">DesignerWeb</span>
 
                                 {hasLoadedModel && <span
-                                      className="uppercase text-grey-darker font-bold cursor-pointer mr-6 inline-block cursor-pointer ml-12"
-                                      onClick={_ => this.handleModelSelectionChange(SelectedDataType.DOMAINS)}>DOMAINS</span>}
+                                  className="uppercase text-grey-darker font-bold cursor-pointer mr-6 inline-block cursor-pointer ml-12"
+                                  onClick={_ => this.handleModelSelectionChange(SelectedDataType.DOMAINS)}>DOMAINS</span>}
                             </div>
                             <div className='flex items-center'>
                                 {hasLoadedModel && <span
-                                       className="uppercase text-grey-darker font-bold cursor-pointer mr-6 inline-block cursor-pointer"
-                                       onClick={this.downloadModel}>Download</span>}
+                                  className="uppercase text-grey-darker font-bold cursor-pointer mr-6 inline-block cursor-pointer"
+                                  onClick={this.downloadModel}>Download</span>}
 
                                 <div className="upload-btn-wrapper cursor-pointer">
                                     <span

@@ -127,7 +127,7 @@ class CDMModel {
         const dataItemsNode = this.findNode('c:DataItems');
         const dataItem = this.buildBasicNode('o:DataItem', name);
 
-        this.addAttributesToNode(dataItem, {
+        this.setAttributesOnNode(dataItem, {
             'a:DataType': DataTypeHelper.buildTypeIdentifier(dataType, length),
             'a:Length': length.toString()
         });
@@ -250,59 +250,104 @@ class CDMModel {
         return entity;
     }
 
+    private findDomainById(domainsNode: Node, id: string) {
+        return this.findChildNode(domainsNode, (node) => {
+            return node.nodeName === 'o:Domain' && (node as Element).getAttribute('Id') === id
+        });
+    }
+
     setDataTypeAndLengthForDomain(domainId: string, name: string, dataType: string, length: number) {
-        const domain = this.findChildNode(this.findNode('c:Domains'), (node) => {
-            return node.nodeName === 'o:Domain' && (node as Element).getAttribute('Id') === domainId
+        const domain = this.findDomainById(this.findNode('c:Domains'), domainId);
+
+        this.setAttributesOnNode(domain, {
+            'a:Name': name,
+            'a:DataType': DataTypeHelper.buildTypeIdentifier(dataType, length),
+            'a:Length': length.toString(),
         });
 
-        const nameNode = this.findChildNode(domain, node => node.nodeName === 'a:Name');
-        const nameValueNode = nameNode.firstChild as Text;
-        nameValueNode.data = name;
-
-        const dataTypeNode = this.findChildNode(domain, node => node.nodeName === 'a:DataType');
-        const dataTypeValueNode = dataTypeNode.firstChild as Text;
-        dataTypeValueNode.data = DataTypeHelper.buildTypeIdentifier(dataType, length);
-
-        const lengthNode = this.findChildNode(domain, node => node.nodeName === 'a:Length');
-        const lengthValueNode = lengthNode.firstChild as Text;
-        lengthValueNode.data = length.toString();
-
         return domain;
+    }
+
+    removeDomain(domainId: string) : boolean {
+        if (this.getUsageCount(domainId) > 0) {
+            console.log('refused to delete domain because it is used!');
+            return false;
+        }
+
+        const domainsNode = this.findNode('c:Domains');
+        const domain = this.findDomainById(domainsNode, domainId);
+        domainsNode.removeChild(domain);
+
+        return true;
+    }
+
+    createDomain(name: string, dataType: string, length: number) {
+        const domainsNode = this.findNode('c:Domains');
+
+        const domainNode = this.buildBasicNode('o:Domain', name);
+
+        this.setAttributesOnNode(domainNode, {
+            'a:Name': name,
+            'a:DataType': DataTypeHelper.buildTypeIdentifier(dataType, length),
+            'a:Length': length.toString(),
+        });
+
+        domainsNode.appendChild(domainNode);
+
+        return domainsNode;
     }
 
     private buildBasicNode(nodeName: string, name: string, identifierId?: string, code?: string) {
         const node = this.document.createElement(nodeName);
         node.setAttribute('Id', identifierId === undefined ? this.getNextUniqueId() : identifierId);
 
-        this.addAttributesToNode(node, {
+        this.setAttributesOnNode(node, {
             'a:ObjectID': uid().toUpperCase(),
             'a:CreationDate': '1556190897',
             'a:Creator': 'webversion',
             'a:ModificationDate': '1556190923',
             'a:Modifier': 'webversion',
             'a:Name': name,
-            'a:Code': code || name
+            'a:Code': code || uid().toUpperCase()
         });
 
         return node;
     }
 
-    private addAttributesToNode(node: Node, attributes: { [key: string]: string }) {
+    private setAttributesOnNode(node: Node, attributes: { [key: string]: string }) {
         for (let attributeName in attributes) {
-            const attributeNode = this.document.createElement(attributeName);
-            attributeNode.appendChild(this.document.createTextNode(attributes[attributeName]));
+            let attributeNode = this.findChildNode(node, node => node.nodeName === attributeName);
 
-            node.appendChild(attributeNode);
+            if (attributeNode === undefined) {
+                attributeNode = this.document.createElement(attributeName);
+                attributeNode.appendChild(this.document.createTextNode(attributes[attributeName]));
+
+                node.appendChild(attributeNode);
+            }
+
+            const valueNode = attributeNode.firstChild as Text;
+            valueNode.data = attributes[attributeName];
         }
+    }
+
+    private getUsageCount(id: string) {
+        const refIdPattern = /Ref="(o[0-9]+)"/g;
+
+        return (this.getAsXml().match(refIdPattern) || []).filter(x => x.replace(refIdPattern, '$1') === id).length;
     }
 
     getAsXml() {
         return new XMLSerializer().serializeToString(this.document.documentElement);
     }
 
+    private getUsedIds() {
+
+    }
+
     private getNextUniqueId() {
         const idPattern = /Id="o([0-9]+)"/g;
         const ids = (this.getAsXml().match(idPattern) || []).map(x => parseInt(x.replace(idPattern, '$1')));
+
         const nextId = Math.max(...ids) + 1;
 
         return 'o' + nextId;

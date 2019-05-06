@@ -7,7 +7,8 @@ interface IProps {
     domains: IDomain[],
     model: IModel,
     onDomainChange: (domainId: string, name: string, dataType: string, length: number) => void
-    onDomainRemoval: (domainId: string) => void
+    onDomainRemoval: (domainId: string) => void,
+    onDomainCreation: (name: string, dataType: string, length: number) => void,
 }
 
 interface IState {
@@ -19,7 +20,7 @@ class DomainsEditor extends Component<IProps, IState> {
 
 
     render() {
-        const {domains, onDomainChange, onDomainRemoval} = this.props;
+        const {domains, onDomainChange, onDomainRemoval, onDomainCreation} = this.props;
 
         return (
             <div>
@@ -28,10 +29,11 @@ class DomainsEditor extends Component<IProps, IState> {
                         <span className="form__label">
                             Attributes
                         </span>
-                        <span className="form__label form__label--green ml-2">
+                        <span className="form__label form__label--green ml-2 cursor-pointer inline-block" onClick={e => onDomainCreation('DOMAIN_1', 'VA', 255)}>
                             Add
                         </span>
                     </div>
+                    <div className='max-h-md overflow-y-auto'>
                     <table className='w-full text-left table-collapse'>
                         <tbody className='align-baseline'>
                         <tr>
@@ -73,6 +75,7 @@ class DomainsEditor extends Component<IProps, IState> {
                         })}
                         </tbody>
                     </table>
+                </div>
                 </div>
             </div>
         )
