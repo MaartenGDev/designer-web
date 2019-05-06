@@ -2,7 +2,13 @@
 Parses common diagram formats and displays the web-version.
 
 ## Demo
-![Demo](diagram_demo.gif)
+[View it online](https://cdm.maartendev.me)
+##### Overview
+![Overview](./docs/overview.png)
+##### Attribute Editing
+![Entity Attribute](./docs/entity_attributes.png)
+##### Domain Editing
+![Domains](./docs/domains.png)
 
 ## Features
 - View existing model
