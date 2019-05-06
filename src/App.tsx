@@ -11,6 +11,8 @@ import IEntity from "./models/IEntity";
 import {DownloadHelper} from "./helpers/DownloadHelper";
 import {EntityIdentifierChangeAction} from "./models/EntityIdentifierChangeAction";
 import DomainsEditor from "./components/editors/DomainsEditor";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface IProps {
 }
@@ -97,8 +99,11 @@ class App extends Component<IProps, IState> {
     };
 
     private handleDomainRemoval = (domainId: string) => {
-        this.CDMModel.removeDomain(domainId);
-        this.handleModelSourceChange(this.CDMModel.getAsXml());
+        if(this.CDMModel.removeDomain(domainId)){
+            return this.handleModelSourceChange(this.CDMModel.getAsXml());
+        }
+
+        toast.error('Failed to delete domain, there are entities using this domain.');
     };
 
     private handleDomainCreation = (name: string, dataType: string, length: number) => {
@@ -120,7 +125,7 @@ class App extends Component<IProps, IState> {
         DownloadHelper.downloadAsFile('model.cdm', data)
     };
 
-    private handleModelUpload = (e: { target: HTMLInputElement }) => {
+    private handleModelImport = (e: { target: HTMLInputElement }) => {
         if (e.target.files === null || e.target.files.length === 0) return;
         const reader = new FileReader();
 
@@ -146,7 +151,8 @@ class App extends Component<IProps, IState> {
                   <div className='flex justify-between border-b border-grey-lighter p-4 mb-2'>
                     <p
                       className='uppercase tracking-wide text-grey-darker text-base font-bold'>
-                      Edit Entity
+                        {selectedDataType === SelectedDataType.ENTITY && 'Edit Entity'}
+                        {selectedDataType === SelectedDataType.DOMAINS && 'Edit Domains'}
                     </p>
                     <MdClose onClick={_ => this.handleModelSelectionChange(SelectedDataType.NONE, undefined)}/>
                   </div>
@@ -178,7 +184,7 @@ class App extends Component<IProps, IState> {
                     style={{backgroundColor: '#f7f7f7'}}
                     className="flex flex-col flex-grow items-stretch min-h-screen"
                 >
-                    <div className="py-6 border-b border-grey-lighter pl-6 bg-white pr-6">
+                    <div className="py-6 border-b border-grey-lighter pl-6 bg-white pr-6 relative">
                         <div className='flex justify-between items-center'>
                             <div className='flex items-center'>
                                 <span className="text-2xl font-bold">DesignerWeb</span>
@@ -190,21 +196,23 @@ class App extends Component<IProps, IState> {
                             <div className='flex items-center'>
                                 {hasLoadedModel && <span
                                   className="uppercase text-grey-darker font-bold cursor-pointer mr-6 inline-block cursor-pointer"
-                                  onClick={this.downloadModel}>Download</span>}
+                                  onClick={this.downloadModel}>Export</span>}
 
                                 <div className="upload-btn-wrapper cursor-pointer">
                                     <span
-                                        className="uppercase text-grey-darker font-bold cursor-pointer upload-btn-wrapper__label">Upload Model</span>
+                                        className="uppercase text-grey-darker font-bold cursor-pointer upload-btn-wrapper__label">Import Model</span>
                                     <input type="file" className='upload-btn-wrapper__input'
-                                           onChange={this.handleModelUpload}/>
+                                           onChange={this.handleModelImport}/>
                                 </div>
 
                             </div>
                         </div>
                     </div>
 
-                    <div id="diagram-window" className="pl-2 mt-12 flex-grow flex flex-col"
+                    <div id="diagram-window" className="pl-2 mt-12 flex-grow flex flex-col relative"
                          onClick={_ => this.handleModelSelectionChange(SelectedDataType.NONE, undefined)}>
+                        <ToastContainer autoClose={3000}/>
+
                         {model.entities.length > 0
                             ? <Diagram model={model} onModelSelectionChange={this.handleModelSelectionChange}/>
                             : <p>No data</p>}

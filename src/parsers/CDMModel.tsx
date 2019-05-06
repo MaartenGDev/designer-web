@@ -270,7 +270,6 @@ class CDMModel {
 
     removeDomain(domainId: string) : boolean {
         if (this.getUsageCount(domainId) > 0) {
-            console.log('refused to delete domain because it is used!');
             return false;
         }
 
@@ -336,14 +335,6 @@ class CDMModel {
         return (this.getAsXml().match(refIdPattern) || []).filter(x => x.replace(refIdPattern, '$1') === id).length;
     }
 
-    getAsXml() {
-        return new XMLSerializer().serializeToString(this.document.documentElement);
-    }
-
-    private getUsedIds() {
-
-    }
-
     private getNextUniqueId() {
         const idPattern = /Id="o([0-9]+)"/g;
         const ids = (this.getAsXml().match(idPattern) || []).map(x => parseInt(x.replace(idPattern, '$1')));
@@ -351,6 +342,10 @@ class CDMModel {
         const nextId = Math.max(...ids) + 1;
 
         return 'o' + nextId;
+    }
+
+    getAsXml() {
+        return new XMLSerializer().serializeToString(this.document.documentElement);
     }
 }
 

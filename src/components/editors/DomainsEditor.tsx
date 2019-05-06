@@ -24,10 +24,10 @@ class DomainsEditor extends Component<IProps, IState> {
 
         return (
             <div>
-                <div className="w-full mt-6">
+                <div className="w-full">
                     <div className='flex'>
                         <span className="form__label">
-                            Attributes
+                            Domains
                         </span>
                         <span className="form__label form__label--green ml-2 cursor-pointer inline-block" onClick={e => onDomainCreation('DOMAIN_1', 'VA', 255)}>
                             Add
