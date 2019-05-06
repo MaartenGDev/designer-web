@@ -34,4 +34,11 @@ export class DataTypeHelper {
     static getLabelForDataType(dataType: string){
         return this.dataTypesById[DataTypeHelper.getDataTypeWithoutLength(dataType)]
     }
+
+    static buildTypeIdentifier(dataType: string, length: number){
+        if(length === 0) return dataType;
+
+        // Don't know why they append the length to the type, can't change because the model has to be parsable by external tools.
+        return this.getDataTypeWithoutLength(dataType) + length.toString();
+    }
 }

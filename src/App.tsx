@@ -91,6 +91,15 @@ class App extends Component<IProps, IState> {
         this.handleModelSourceChange(this.CDMModel.getAsXml());
     };
 
+    private handleDomainChange = (domainId: string, name: string, dataType: string, length: number) => {
+        this.CDMModel.setDataTypeAndLengthForDomain(domainId, name, dataType, length);
+        this.handleModelSourceChange(this.CDMModel.getAsXml());
+    }
+
+    private handleDomainRemoval(domainId: string){
+
+    }
+
     private getEditableDataForSelection = (model: IModel, selectedDataType: SelectedDataType, selectedId: string): IEntity | undefined => {
         if (selectedDataType === SelectedDataType.NONE) return undefined;
 
@@ -149,7 +158,7 @@ class App extends Component<IProps, IState> {
                       />}
 
                       {selectedDataType === SelectedDataType.DOMAINS &&
-                        <DomainsEditor domains={Object.values(model.domains)} model={model} onDomainChange={x => {}} onDomainRemoval={x => {}} />
+                        <DomainsEditor domains={Object.values(model.domains)} model={model} onDomainChange={this.handleDomainChange} onDomainRemoval={this.handleDomainRemoval} />
                       }
                   </div>
                 </div>}

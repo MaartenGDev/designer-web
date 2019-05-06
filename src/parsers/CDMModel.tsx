@@ -1,5 +1,6 @@
 import {DOMParser, XMLSerializer} from 'xmldom'
 import uid from 'uuid/v4';
+import {DataTypeHelper} from "../helpers/DataTypeHelper";
 
 class CDMModel {
     private document: Document = new Document();
@@ -127,7 +128,7 @@ class CDMModel {
         const dataItem = this.buildBasicNode('o:DataItem', name);
 
         this.addAttributesToNode(dataItem, {
-            'a:DataType': dataType + length.toString(), // Don't know why they append the length to the type, can't change because the model has to be parsable by external tools.
+            'a:DataType': DataTypeHelper.buildTypeIdentifier(dataType, length),
             'a:Length': length.toString()
         });
 
@@ -247,6 +248,26 @@ class CDMModel {
         identifiers.appendChild(identifierNode);
 
         return entity;
+    }
+
+    setDataTypeAndLengthForDomain(domainId: string, name: string, dataType: string, length: number) {
+        const domain = this.findChildNode(this.findNode('c:Domains'), (node) => {
+            return node.nodeName === 'o:Domain' && (node as Element).getAttribute('Id') === domainId
+        });
+
+        const nameNode = this.findChildNode(domain, node => node.nodeName === 'a:Name');
+        const nameValueNode = nameNode.firstChild as Text;
+        nameValueNode.data = name;
+
+        const dataTypeNode = this.findChildNode(domain, node => node.nodeName === 'a:DataType');
+        const dataTypeValueNode = dataTypeNode.firstChild as Text;
+        dataTypeValueNode.data = DataTypeHelper.buildTypeIdentifier(dataType, length);
+
+        const lengthNode = this.findChildNode(domain, node => node.nodeName === 'a:Length');
+        const lengthValueNode = lengthNode.firstChild as Text;
+        lengthValueNode.data = length.toString();
+
+        return domain;
     }
 
     private buildBasicNode(nodeName: string, name: string, identifierId?: string, code?: string) {
