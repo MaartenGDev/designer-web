@@ -89,7 +89,7 @@ class EndpointFactory {
                 id: 'relationName'
             }]
         ];
-        const endpoint = ['Dot', {cssClass: 'endpointClass', radius: 5, hoverClass: 'endpointHoverClass'}]
+        const endpoint = ['Dot', {cssClass: 'endpointClass', radius: 5, hoverClass: 'endpointHoverClass'}];
         const endpointStyle = {fill: lineColor};
 
         return {

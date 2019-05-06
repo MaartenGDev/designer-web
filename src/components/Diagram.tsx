@@ -20,7 +20,6 @@ const confirm = (data: any) => {
 
 class Diagram extends Component<IProps, IState> {
     private diagram: any;
-    private hasLoadedDataForDiagramAtLeastOnce = false;
 
     async componentDidMount() {
         const {model} = this.props;
@@ -50,11 +49,6 @@ class Diagram extends Component<IProps, IState> {
                     DragOptions: {cursor: 'pointer', zIndex: 1},
                     Container: 'canvas'
                 });
-
-                (instance as any).addToList = () => {
-
-                };
-                console.log(instance);
 
                 instance.bind('click', (conn: Connection) => {
                     this.diagram.detach(conn);
@@ -95,7 +89,6 @@ class Diagram extends Component<IProps, IState> {
                             direction = matchIndex === 0 ? AnchorDirection.BOTTOM : (matchIndex === 1 ? AnchorDirection.TOP : AnchorDirection.FLOW)
                         }
 
-
                         this.diagram.connect({
                             source: this.diagram.addEndpoint(sourceElem, EndpointFactory.create(model, matchIndex), {anchor: EndpointFactory.getAnchorPoints(direction)}),
                             target: this.diagram.addEndpoint(targetElem, EndpointFactory.create(model, matchIndex), {anchor: EndpointFactory.getAnchorPoints(direction)}),
@@ -105,7 +98,6 @@ class Diagram extends Component<IProps, IState> {
             });
 
             this.diagram.draggable(entityElements, {force: true});
-            this.hasLoadedDataForDiagramAtLeastOnce = true;
         });
     }
 
@@ -169,8 +161,14 @@ class Diagram extends Component<IProps, IState> {
                                     top: this.calculateLengthBetweenYCoordinates(entity.location.topLeft.y, topY) * heightScaleFactor,
                                     left: this.calculateLengthBetweenXCoordinates(entity.location.topLeft.x, leftX) * widthScaleFactor,
                                 }} onClick={e => {
+
                         e.stopPropagation();
-                        onModelSelectionChange(SelectedDataType.ENTITY, entity.id)
+
+                        if((e.currentTarget as Element).classList.contains('jtk-dragged')){
+                            (e.currentTarget as Element).classList.remove('jtk-dragged')
+                        }else{
+                            onModelSelectionChange(SelectedDataType.ENTITY, entity.id)
+                        }
                     }}>
                         <div className='p-4 border-b border-grey-lighter font-bold text-grey-darker'>
                             <p>{entity.name}</p>
