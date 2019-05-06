@@ -35,6 +35,22 @@ class EndpointFactory {
         return elem;
     }
 
+
+
+    private static buildRelationName(component: any, model: IModel, useFrom: boolean) {
+        const {sourceId, targetId} = component;
+        const relation = model.relations.find(x => x.from.ref === sourceId && x.to.ref === targetId);
+
+        if (relation === undefined) {
+            return null;
+        }
+
+        const elem = document.createElement('div');
+        elem.classList.add('tag', 'z-10');
+        elem.innerHTML = `<p>${relation.name}</p>`;
+        return elem;
+    }
+
     static create(model: IModel): any {
         const lineColor = '#30364c';
         const connector = ['Bezier', {cssClass: 'connectorClass', hoverClass: 'connectorHoverClass'}]
@@ -55,6 +71,11 @@ class EndpointFactory {
                 create: (component: any) => this.buildCardinalityTag(component, model, false),
                 location: 0.9,
                 id: 'toCardinalityOverlay'
+            }],
+            ['Custom', {
+                create: (component: any) => this.buildRelationName(component, model, false),
+                location: 0.5,
+                id: 'relationName'
             }]
         ];
         const endpoint = ['Dot', {cssClass: 'endpointClass', radius: 5, hoverClass: 'endpointHoverClass'}]
