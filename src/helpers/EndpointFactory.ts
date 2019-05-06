@@ -1,28 +1,35 @@
 import IModel from "../models/IModel";
+import {AnchorDirection} from "../models/AnchorDirection";
+
 
 class EndpointFactory {
-    static getAnchorPoints() {
+    static getAnchorPoints(direction: AnchorDirection = AnchorDirection.FLOW) {
+        const flowDirection = direction === AnchorDirection.TOP ? -1 : (direction === AnchorDirection.BOTTOM ? 1 : 0);
+
         return [
-            [0.2, 0, 0, 0, 0, 0],
-            [0.5, 0, 0, 0, 0, 0],
-            [0.8, 0, 0, 0, 0, 0],
+            [0.2, 0, flowDirection,0,  0, 0],
+            [0.5, 0, flowDirection,0,  0, 0],
+            [0.8, 0, flowDirection,0,  0, 0],
 
-            [0, 0.2, 0, 0, 0, 0],
-            [0, 0.5, 0, 0, 0, 0],
-            [0, 0.8, 0, 0, 0, 0],
+            [0, 0.2, flowDirection,0,  0, 0],
+            [0, 0.5, flowDirection,0,  0, 0],
+            [0, 0.8, flowDirection,0,  0, 0],
 
-            [1, 0.2, 0, 0, 0, 0],
-            [1, 0.5, 0, 0, 0, 0],
-            [1, 0.8, 0, 0, 0, 0],
+            [1, 0.2, flowDirection, 0,0,  0],
+            [1, 0.5, flowDirection, 0,0,  0],
+            [1, 0.8, flowDirection, 0,0,  0],
 
-            [0.2, 1, 0, 0, 0, 0],
-            [0.5, 1, 0, 0, 0, 0],
-            [0.8, 1, 0, 0, 0, 0]
+            [0.2, 1, flowDirection, 0,0,  0],
+            [0.5, 1, flowDirection, 0,0,  0],
+            [0.8, 1, flowDirection, 0,0,  0]
         ];
     }
 
     private static buildCardinalityTag(component: any, model: IModel, useFrom: boolean) {
-        const {sourceId, targetId} = component;
+        const {source, target} = component;
+        const sourceId = source.dataset.customId;
+        const targetId = target.dataset.customId;
+
         const relation = model.relations.find(x => x.from.ref === sourceId && x.to.ref === targetId);
 
         if (relation === undefined) {
@@ -36,9 +43,11 @@ class EndpointFactory {
     }
 
 
-
     private static buildRelationName(component: any, model: IModel) {
-        const {sourceId, targetId} = component;
+        const {source, target} = component;
+        const sourceId = source.dataset.customId;
+        const targetId = target.dataset.customId;
+
         const relation = model.relations.find(x => x.from.ref === sourceId && x.to.ref === targetId);
 
         if (relation === undefined) {
@@ -53,7 +62,7 @@ class EndpointFactory {
 
     static create(model: IModel): any {
         const lineColor = '#30364c';
-        const connector = ['Bezier', {cssClass: 'connectorClass', hoverClass: 'connectorHoverClass'}]
+        const connector = ['Bezier', {cssClass: 'connectorClass', hoverClass: 'connectorHoverClass', curviness: 100}]
         const connectorStyle = {
             strokeWidth: 3,
             stroke: lineColor

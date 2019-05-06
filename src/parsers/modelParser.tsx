@@ -23,31 +23,34 @@ const getAsJson = (model: any): IModel => {
         return acc;
     }, {});
 
-    const domains = rootModel['c:Domains'][0]['o:Domain'].reduce((acc: { [key: string]: IDomain }, cur: any) => {
-        acc[cur['$'].Id] = {
-            id: cur['$'].Id,
-            name: cur['a:Name'][0],
-            code: cur['a:Code'][0],
-            dataType: cur.hasOwnProperty('a:DataType') ? cur['a:DataType'][0] : '',
-            length: cur.hasOwnProperty('a:Length') ? cur['a:Length'][0] : 0,
-        };
-        return acc;
-    }, {});
+    const domains = rootModel.hasOwnProperty('c:Domains')
+        ? rootModel['c:Domains'][0]['o:Domain'].reduce((acc: { [key: string]: IDomain }, cur: any) => {
+            acc[cur['$'].Id] = {
+                id: cur['$'].Id,
+                name: cur['a:Name'][0],
+                code: cur['a:Code'][0],
+                dataType: cur.hasOwnProperty('a:DataType') ? cur['a:DataType'][0] : '',
+                length: cur.hasOwnProperty('a:Length') ? cur['a:Length'][0] : 0,
+            };
+            return acc;
+        }, {})
+        : [];
 
-    const dataItems: { [key: string]: IAttribute } = rootModel['c:DataItems'][0]['o:DataItem'].reduce((acc: { [key: string]: IAttribute }, cur: any) => {
-        acc[cur['$'].Id] = {
-            id: cur['$'].Id,
-            name: cur['a:Name'][0],
-            dataType: cur.hasOwnProperty('a:DataType') ? cur['a:DataType'][0] : '',
-            length: cur.hasOwnProperty('a:Length') ? cur['a:Length'][0] : 0,
-            domainId: cur.hasOwnProperty('c:Domain') ? cur['c:Domain'][0]['o:Domain'][0]['$'].Ref : undefined
-        };
-        return acc;
-    }, {});
+    const dataItems: { [key: string]: IAttribute } = rootModel.hasOwnProperty('c:DataItems')
+        ? rootModel['c:DataItems'][0]['o:DataItem'].reduce((acc: { [key: string]: IAttribute }, cur: any) => {
+            acc[cur['$'].Id] = {
+                id: cur['$'].Id,
+                name: cur['a:Name'][0],
+                dataType: cur.hasOwnProperty('a:DataType') ? cur['a:DataType'][0] : '',
+                length: cur.hasOwnProperty('a:Length') ? cur['a:Length'][0] : 0,
+                domainId: cur.hasOwnProperty('c:Domain') ? cur['c:Domain'][0]['o:Domain'][0]['$'].Ref : undefined
+            };
+            return acc;
+        }, {})
+        : [];
 
-    const relations: IRelation[] = !rootModel.hasOwnProperty('c:Relationships')
-        ? []
-        : rootModel['c:Relationships'][0]['o:Relationship'].map((relation: any) => ({
+    const relations: IRelation[] = rootModel.hasOwnProperty('c:Relationships')
+        ? rootModel['c:Relationships'][0]['o:Relationship'].map((relation: any) => ({
             id: relation['$'].Id,
             name: relation['a:Name'][0],
             from: {
@@ -58,7 +61,8 @@ const getAsJson = (model: any): IModel => {
                 ref: relation['c:Object2'][0]['o:Entity'][0]['$'].Ref,
                 cardinality: relation['a:Entity2ToEntity1RoleCardinality'][0]
             },
-        }));
+        }))
+        : [];
 
     return {
         entities: entities.map((entity: any) => {

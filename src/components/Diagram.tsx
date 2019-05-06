@@ -4,6 +4,7 @@ import IModel from "../models/IModel";
 import EndpointFactory from "../helpers/EndpointFactory";
 import {SelectedDataType} from "../models/SelectedDataType";
 import IEntityIdentifier from "../models/IEntityIdentifier";
+import {AnchorDirection} from "../models/AnchorDirection";
 
 interface IProps {
     model: IModel,
@@ -29,7 +30,7 @@ class Diagram extends Component<IProps, IState> {
     }
 
     async componentWillReceiveProps(nextProps: Readonly<IProps>, nextContext: any) {
-        if(this.props.model === nextProps.model) return;
+        if (this.props.model === nextProps.model) return;
         await this.resetDiagram();
         this.loadDataForDiagram(nextProps.model);
     }
@@ -49,6 +50,11 @@ class Diagram extends Component<IProps, IState> {
                     DragOptions: {cursor: 'pointer', zIndex: 1},
                     Container: 'canvas'
                 });
+
+                (instance as any).addToList = () => {
+
+                };
+                console.log(instance);
 
                 instance.bind('click', (conn: Connection) => {
                     this.diagram.detach(conn);
@@ -74,20 +80,29 @@ class Diagram extends Component<IProps, IState> {
 
             const entityElements = document.querySelectorAll('.editor .entity');
 
-            for (let i = 0; i < entityElements.length; i++) {
-                const sourceId = entityElements[i].id;
-
+            Object.keys(connections).forEach((sourceId: string) => {
                 if (connections.hasOwnProperty(sourceId)) {
                     const connected = connections[sourceId];
-                    for (const targetId of connected) {
+
+                    connected.forEach((targetId, index) => {
+                        const sourceElem = document.querySelector('.entity-' + sourceId)!;
+                        const targetElem = document.querySelector('.entity-' + targetId)!;
+                        const connectionsToSameEntity = connected.filter(id => id === targetId).length;
+                        const offset = index - connected.findIndex(x => x === targetId);
+                        let  direction = AnchorDirection.FLOW;
+
+                        if(connectionsToSameEntity >= 2){
+                            direction = offset === 0 ? AnchorDirection.BOTTOM : (offset === 1 ? AnchorDirection.TOP : AnchorDirection.FLOW)
+                        }
+
 
                         this.diagram.connect({
-                            source: this.diagram.addEndpoint(sourceId, EndpointFactory.create(model), {anchor: EndpointFactory.getAnchorPoints()}),
-                            target: this.diagram.addEndpoint(targetId, EndpointFactory.create(model), {anchor: EndpointFactory.getAnchorPoints()})
+                            source: this.diagram.addEndpoint(sourceElem, EndpointFactory.create(model), {anchor: EndpointFactory.getAnchorPoints(direction)}),
+                            target: this.diagram.addEndpoint(targetElem, EndpointFactory.create(model), {anchor: EndpointFactory.getAnchorPoints(direction)}),
                         });
-                    }
+                    });
                 }
-            }
+            });
 
             this.diagram.draggable(entityElements, {force: true});
             this.hasLoadedDataForDiagramAtLeastOnce = true;
@@ -133,9 +148,9 @@ class Diagram extends Component<IProps, IState> {
         return topY - number;
     }
 
-    private getLabelForIdentifier(identifier: IEntityIdentifier | undefined){
-        if(identifier === undefined) return '';
-        if(identifier.isPrimary) return '<pi>';
+    private getLabelForIdentifier(identifier: IEntityIdentifier | undefined) {
+        if (identifier === undefined) return '';
+        if (identifier.isPrimary) return '<pi>';
 
         return '<ai>';
     }
@@ -148,10 +163,12 @@ class Diagram extends Component<IProps, IState> {
         return (
             <div id="diagramContainer" className='editor relative flex-grow overflow-auto'>
                 {model.entities.map((entity) => {
-                    return <div key={entity.id} id={entity.id} className={`entity absolute bg-white shadow ${model.relations.find(x => x.from.ref === entity.id || x.to.ref === entity.id) === undefined ? '' : 'has-relations'}`} style={{
-                        top: this.calculateLengthBetweenYCoordinates(entity.location.topLeft.y, topY) * heightScaleFactor,
-                        left: this.calculateLengthBetweenXCoordinates(entity.location.topLeft.x, leftX) * widthScaleFactor,
-                    }} onClick={e => {
+                    return <div key={entity.id} data-custom-id={entity.id}
+                                className={`entity absolute bg-white shadow ${model.relations.find(x => x.from.ref === entity.id || x.to.ref === entity.id) === undefined ? '' : 'has-relations'} entity-${entity.id}`}
+                                style={{
+                                    top: this.calculateLengthBetweenYCoordinates(entity.location.topLeft.y, topY) * heightScaleFactor,
+                                    left: this.calculateLengthBetweenXCoordinates(entity.location.topLeft.x, leftX) * widthScaleFactor,
+                                }} onClick={e => {
                         e.stopPropagation();
                         onModelSelectionChange(SelectedDataType.ENTITY, entity.id)
                     }}>
@@ -164,7 +181,8 @@ class Diagram extends Component<IProps, IState> {
                                 {entity.attributes.map(attribute => {
                                     const identifier = entity.identifiers.find(identifier => identifier.attributeId === attribute.id);
 
-                                    return <tr key={attribute.id} className={identifier === undefined ? '' : (identifier.isPrimary ? 'primary-identifier-row' : 'identifier-row')}>
+                                    return <tr key={attribute.id}
+                                               className={identifier === undefined ? '' : (identifier.isPrimary ? 'primary-identifier-row' : 'identifier-row')}>
                                         <td className='pr-2'>{model.dataItems[attribute.dataItemId].name}</td>
                                         <td>{this.getLabelForIdentifier(identifier)}</td>
                                         <td className='pl-2'>{model.dataItems[attribute.dataItemId].domainId === undefined ? model.dataItems[attribute.dataItemId].name : model.domains[model.dataItems[attribute.dataItemId].domainId!].name}</td>
