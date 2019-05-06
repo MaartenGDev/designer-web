@@ -1,4 +1,5 @@
 export enum SelectedDataType {
     NONE,
-    ENTITY
+    ENTITY,
+    DOMAINS,
 }

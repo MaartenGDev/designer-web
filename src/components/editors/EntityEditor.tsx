@@ -4,6 +4,7 @@ import IModel from "../../models/IModel";
 import IEntityAttribute from "../../models/IEntityAttribute";
 import {EntityIdentifierChangeAction} from "../../models/EntityIdentifierChangeAction";
 import IEntityIdentifier from "../../models/IEntityIdentifier";
+import {DataTypeHelper} from "../../helpers/DataTypeHelper";
 
 interface IProps {
     entity: IEntity,
@@ -19,43 +20,10 @@ interface IProps {
 interface IState {
     dataTypeSourceByAttributeId: { [key: string]: DataTypeSourceType }
 }
-
-const dataTypesById: { [key: string]: string } = {
-    "I": "Integer",
-    "N": "Number",
-    "DC": "Decimal",
-    "F": "Float",
-    "MN": "Money",
-    "BL": "Boolean",
-    "A": "Characters",
-    "VA": "Variable Characters",
-    "LA": "Long Characters",
-    "LVA": "Long Variable Characters",
-    "TXT": "Text",
-    "BT": "Bytes",
-    "MBT": "Multibyte",
-    "D": "Date",
-    "T": "Time",
-    "DT": "Date & Time",
-    "TS": "Timestamp",
-    "BIN": "Binary",
-    "VBIN": "Variable Binary",
-    "LBIN": "Long Binary",
-    "": "Undefined"
-};
-
 enum DataTypeSourceType {
     DOMAIN,
     RAW_TYPE
 }
-
-const getDataTypeWithoutLength = (dataType: string): string => {
-    return dataType.replace(/[0-9]/g, '');
-};
-
-const getLabelForDataType = (dataType: string): string => {
-    return dataTypesById[getDataTypeWithoutLength(dataType)]
-};
 
 class EntityEditor extends Component<IProps, IState> {
     state = {
@@ -111,7 +79,7 @@ class EntityEditor extends Component<IProps, IState> {
 
         const domainOptions = Object.values(model.domains).map(domain => ({
             id: domain.id,
-            label: `${domain.name}(${getLabelForDataType(domain.dataType)})`
+            label: `${domain.name}(${DataTypeHelper.getLabelForDataType(domain.dataType)})`
         }));
 
 
@@ -162,10 +130,10 @@ class EntityEditor extends Component<IProps, IState> {
                                 {dataTypeSourceByAttributeId[attribute.id] === DataTypeSourceType.RAW_TYPE && <>
                                   <td className='table__cell'>
                                     <select className='form__input form__input--select'
-                                            value={getDataTypeWithoutLength(model.dataItems[attribute.dataItemId].dataType)}
+                                            value={DataTypeHelper.getDataTypeWithoutLength(model.dataItems[attribute.dataItemId].dataType)}
                                             onChange={e => onEntityAttributeChange(entity.id, attribute.id, attribute.dataItemId, e.target.value, model.dataItems[attribute.dataItemId].length)}>
-                                        {Object.keys(dataTypesById).map((type: string) => <option key={type}
-                                                                                                  value={type}>{getLabelForDataType(type)}</option>)}
+                                        {Object.keys(DataTypeHelper.allTypes()).map((type: string) => <option key={type}
+                                                                                                              value={type}>{DataTypeHelper.getLabelForDataType(type)}</option>)}
                                     </select>
                                   </td>
                                   <td className='p-2 border-t border-grey-light  text-xs'>

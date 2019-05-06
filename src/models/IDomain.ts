@@ -1,5 +1,3 @@
-import IRectangleCoordinates from "./IRectangleCoordinates";
-
 interface IDomain {
     id: string,
     name: string

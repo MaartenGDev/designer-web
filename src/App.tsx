@@ -10,12 +10,12 @@ import CDMModel from "./parsers/CDMModel";
 import IEntity from "./models/IEntity";
 import {DownloadHelper} from "./helpers/DownloadHelper";
 import {EntityIdentifierChangeAction} from "./models/EntityIdentifierChangeAction";
+import DomainsEditor from "./components/editors/DomainsEditor";
 
 interface IProps {
 }
 
 interface IState {
-    showModelInput: boolean,
     modelXml: string,
     model: IModel,
     selectedId: string | undefined,
@@ -26,7 +26,6 @@ class App extends Component<IProps, IState> {
     private CDMModel = new CDMModel();
 
     state = {
-        showModelInput: false,
         modelXml: '',
         model: {
             entities: [],
@@ -38,18 +37,6 @@ class App extends Component<IProps, IState> {
         selectedDataType: SelectedDataType.NONE
     };
 
-    componentDidMount() {
-        // this.CDMModel.loadFromXml(data);
-        //
-        // this.handleModelSourceChange(data);
-    }
-
-    toggleModelInput = () => {
-        this.setState((state) => ({
-            showModelInput: !state.showModelInput
-        }));
-    };
-
     handleModelSourceChange = (xml: string) => {
         xmlParser(xml, (data: IModel) => {
             this.setState({
@@ -59,7 +46,7 @@ class App extends Component<IProps, IState> {
         });
     };
 
-    handleModelSelectionChange = (selectedDataType: SelectedDataType, selectedId: string | undefined) => {
+    handleModelSelectionChange = (selectedDataType: SelectedDataType, selectedId?: string | undefined) => {
         this.setState({
             selectedId,
             selectedDataType
@@ -134,22 +121,11 @@ class App extends Component<IProps, IState> {
     };
 
     render() {
-        const {showModelInput, model, selectedDataType, selectedId, modelXml} = this.state;
+        const {model, selectedDataType, selectedId} = this.state;
+        const hasLoadedModel = model.entities.length > 0;
 
         return (
             <div className="relative w-full">
-                <div
-                    className={`bg-black z-30 justify-center items-center absolute w-screen h-screen pin ${showModelInput ? 'flex' : 'hidden'}`}>
-                    <div className='w-1/2 bg-white flex flex-col' style={{height: 'calc(100vh - 60px)'}}>
-                        <div
-                            className='p-4 border-b border-grey-lighter font-bold text-grey-darker flex justify-between items-center'>
-                            <span className='text-xl'>Model</span>
-                            <button onClick={this.toggleModelInput}>Close</button>
-                        </div>
-                        <textarea className='w-full flex-grow'
-                                  onChange={e => this.handleModelSourceChange(e.target.value)} value={modelXml}/>
-                    </div>
-                </div>
                 {selectedDataType !== SelectedDataType.NONE &&
                 <div className='fixed pin-b pin-r mr-6 bg-white z-20 shadow-lg'>
                   <div className='flex justify-between border-b border-grey-lighter p-4 mb-2'>
@@ -171,6 +147,10 @@ class App extends Component<IProps, IState> {
                         onEntityAttributeCreation={this.handleEntityAttributeCreation}
                         onEntityAttributeRemoval={this.handleEntityAttributeRemoval}
                       />}
+
+                      {selectedDataType === SelectedDataType.DOMAINS &&
+                        <DomainsEditor domains={Object.values(model.domains)} model={model} onDomainChange={x => {}} onDomainRemoval={x => {}} />
+                      }
                   </div>
                 </div>}
 
@@ -180,11 +160,17 @@ class App extends Component<IProps, IState> {
                 >
                     <div className="py-6 border-b border-grey-lighter pl-6 bg-white pr-6">
                         <div className='flex justify-between items-center'>
-                            <span className="text-2xl font-bold">DesignerWeb</span>
                             <div className='flex items-center'>
-                                   <span
+                                <span className="text-2xl font-bold">DesignerWeb</span>
+
+                                {hasLoadedModel && <span
+                                      className="uppercase text-grey-darker font-bold cursor-pointer mr-6 inline-block cursor-pointer ml-12"
+                                      onClick={_ => this.handleModelSelectionChange(SelectedDataType.DOMAINS)}>DOMAINS</span>}
+                            </div>
+                            <div className='flex items-center'>
+                                {hasLoadedModel && <span
                                        className="uppercase text-grey-darker font-bold cursor-pointer mr-6 inline-block cursor-pointer"
-                                       onClick={this.downloadModel}>Download</span>
+                                       onClick={this.downloadModel}>Download</span>}
 
                                 <div className="upload-btn-wrapper cursor-pointer">
                                     <span
