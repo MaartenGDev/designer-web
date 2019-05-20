@@ -10,7 +10,9 @@ const xmlParser = new xml2js.Parser();
 const getAsJson = (model: any): IModel => {
     const rootModel = model['Model']['o:RootObject'][0]['c:Children'][0]['o:Model'][0];
 
-    const entities = rootModel['c:Entities'][0]['o:Entity'];
+    const entities = rootModel.hasOwnProperty('c:Entities')
+        ? rootModel['c:Entities'][0]['o:Entity']
+        : [];
 
     const conceptualDiagrams = rootModel['c:ConceptualDiagrams'][0];
     const hasConceptualModel = conceptualDiagrams.hasOwnProperty('o:ConceptualDiagram');
