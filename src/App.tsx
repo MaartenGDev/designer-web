@@ -204,7 +204,7 @@ class App extends Component<IProps, IState> {
                                 <div className="upload-btn-wrapper cursor-pointer">
                                     <span
                                         className="uppercase text-grey-darker font-bold cursor-pointer upload-btn-wrapper__label">Import Model</span>
-                                    <input type="file" className='upload-btn-wrapper__input'
+                                    <input type="file" className='upload-btn-wrapper__input' accept=".cdm,.pdm"
                                            onChange={this.handleModelImport}/>
                                 </div>
 
