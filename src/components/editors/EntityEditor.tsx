@@ -5,6 +5,7 @@ import IEntityAttribute from "../../models/IEntityAttribute";
 import {EntityIdentifierChangeAction} from "../../models/EntityIdentifierChangeAction";
 import IEntityIdentifier from "../../models/IEntityIdentifier";
 import {DataTypeHelper} from "../../helpers/DataTypeHelper";
+import IAttribute from "../../models/IAttribute";
 
 interface IProps {
     entity: IEntity,
@@ -43,8 +44,8 @@ class EntityEditor extends Component<IProps, IState> {
 
     setDefaultAttributeSourceTypesForEntity = (entity: IEntity, model: IModel) => {
         this.setState({
-            dataTypeSourceByAttributeId: entity.attributes.reduce((acc: { [key: string]: DataTypeSourceType }, attribute: IEntityAttribute) => {
-                acc[attribute.id] = model.dataItems[attribute.dataItemId].domainId === undefined ? DataTypeSourceType.RAW_TYPE : DataTypeSourceType.DOMAIN;
+            dataTypeSourceByAttributeId: entity.attributes.reduce((acc: { [key: string]: DataTypeSourceType }, attribute: IAttribute) => {
+                acc[attribute.id] = attribute.domainId === undefined ? DataTypeSourceType.RAW_TYPE : DataTypeSourceType.DOMAIN;
                 return acc;
             }, {})
         })
@@ -118,7 +119,7 @@ class EntityEditor extends Component<IProps, IState> {
                             const identifier = entity.identifiers.find(identifier => identifier.attributeId === attribute.id);
 
                             return <tr key={attribute.id}>
-                                <td className='table__cell'>{model.dataItems[attribute.dataItemId].name}</td>
+                                <td className='table__cell'>{attribute.name}</td>
                                 <td className='table__cell'>
                                     <select className='form__input form__input--select'
                                             value={dataTypeSourceByAttributeId[attribute.id]}
@@ -130,8 +131,8 @@ class EntityEditor extends Component<IProps, IState> {
                                 {dataTypeSourceByAttributeId[attribute.id] === DataTypeSourceType.RAW_TYPE && <>
                                   <td className='table__cell'>
                                     <select className='form__input form__input--select'
-                                            value={DataTypeHelper.getDataTypeWithoutLength(model.dataItems[attribute.dataItemId].dataType)}
-                                            onChange={e => onEntityAttributeChange(entity.id, attribute.id, attribute.dataItemId, e.target.value, model.dataItems[attribute.dataItemId].length)}>
+                                            value={DataTypeHelper.getDataTypeWithoutLength(attribute.dataType)}
+                                            onChange={e => onEntityAttributeChange(entity.id, attribute.id, attribute.dataItemId!, e.target.value, attribute.length)}>
                                         {Object.keys(DataTypeHelper.allTypes()).map((type: string) => <option key={type}
                                                                                                               value={type}>{DataTypeHelper.getLabelForDataType(type)}</option>)}
                                     </select>
@@ -139,15 +140,15 @@ class EntityEditor extends Component<IProps, IState> {
                                   <td className='p-2 border-t border-grey-light  text-xs'>
                                     <input type='number'
                                            className='form__input'
-                                           onChange={e => onEntityAttributeChange(entity.id, attribute.id, attribute.dataItemId, model.dataItems[attribute.dataItemId].dataType, parseInt(e.target.value, 10))}
-                                           value={model.dataItems[attribute.dataItemId].length}/>
+                                           onChange={e => onEntityAttributeChange(entity.id, attribute.id, attribute.dataItemId!, attribute.dataType, parseInt(e.target.value, 10))}
+                                           value={attribute.length}/>
                                   </td>
                                 </>}
                                 {dataTypeSourceByAttributeId[attribute.id] === DataTypeSourceType.DOMAIN && <>
                                   <td className='table__cell'>
                                     <select className='form__input form__input--select'
-                                            value={model.dataItems[attribute.dataItemId].domainId}
-                                            onChange={e => onEntityAttributeDomainChange(entity.id, attribute.id, attribute.dataItemId, e.target.value)}>
+                                            value={attribute.domainId}
+                                            onChange={e => onEntityAttributeDomainChange(entity.id, attribute.id, attribute.dataItemId!, e.target.value)}>
                                         {domainOptions.map(domain => {
                                             return <option key={domain.id} value={domain.id}>{domain.label}</option>
                                         })}
@@ -156,7 +157,7 @@ class EntityEditor extends Component<IProps, IState> {
                                   <td className='table__cell'>
                                     <input type='number'
                                            className='form__input'
-                                           value={model.domains[model.dataItems[attribute.dataItemId].domainId!].length}
+                                           value={model.domains[attribute.domainId!].length}
                                            disabled={true}/>
                                   </td>
                                 </>}

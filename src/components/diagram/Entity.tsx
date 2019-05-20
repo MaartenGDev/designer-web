@@ -50,9 +50,9 @@ const Entity = ({className, entity, model, onModelSelectionChange, position}: IP
 
                         return <tr key={attribute.id}
                                    className={identifier === undefined ? '' : (identifier.isPrimary ? 'primary-identifier-row' : 'identifier-row')}>
-                            <td className='pr-2'>{model.dataItems[attribute.dataItemId].name}</td>
+                            <td className='pr-2'>{attribute.name}</td>
                             <td>{getLabelForIdentifier(identifier)}</td>
-                            <td className='pl-2'>{model.dataItems[attribute.dataItemId].domainId === undefined ? model.dataItems[attribute.dataItemId].name : model.domains[model.dataItems[attribute.dataItemId].domainId!].name}</td>
+                            <td className='pl-2'>{attribute.domainId === undefined ? attribute.name : model.domains[attribute.domainId!].name}</td>
                         </tr>
                     })}
                     </tbody>
