@@ -79,6 +79,8 @@ const getAsJson = (model: any): IModel => {
         }, {})
         : [];
 
+    console.log(rootModel)
+
     const relationsKey = isPhysicalDiagram ? 'c:References' : 'c:Relationships';
     const relationObjectKey = isPhysicalDiagram ? 'o:Reference' : 'o:Relationship';
 
@@ -94,11 +96,11 @@ const getAsJson = (model: any): IModel => {
             name: relation['a:Name'][0],
             from: {
                 ref: relation[relationFirstObjectKey][0][relationRefObjectKey][0]['$'].Ref,
-                cardinality: isPhysicalDiagram ? '' : relation['a:Entity1ToEntity2RoleCardinality'][0]
+                cardinality: isPhysicalDiagram ? relation['a:Cardinality'][0] : relation['a:Entity1ToEntity2RoleCardinality'][0]
             },
             to: {
                 ref: relation[relationSecondObjectKey][0][relationRefObjectKey][0]['$'].Ref,
-                cardinality: isPhysicalDiagram ? '' : relation['a:Entity2ToEntity1RoleCardinality'][0]
+                cardinality: isPhysicalDiagram ? relation['a:Cardinality'][0] : relation['a:Entity2ToEntity1RoleCardinality'][0]
             },
         }))
         : [];
