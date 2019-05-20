@@ -12,16 +12,22 @@ const getAsJson = (model: any): IModel => {
 
     const entities = rootModel['c:Entities'][0]['o:Entity'];
 
-    const coordinatesByEntityId = rootModel['c:ConceptualDiagrams'][0]['o:ConceptualDiagram'][0]['c:Symbols'][0]['o:EntitySymbol'].reduce((acc: { [key: string]: IRectangleCoordinates }, symbol: any) => {
-        const [x1, y2, x2, y1] = symbol['a:Rect'][0].replace(/\(|\)/g, '').split(',').map((coordinate: string) => parseInt(coordinate));
+    const conceptualDiagrams = rootModel['c:ConceptualDiagrams'][0];
+    const hasConceptualModel = conceptualDiagrams.hasOwnProperty('o:ConceptualDiagram');
+    const conceptualModel = hasConceptualModel ? conceptualDiagrams['o:ConceptualDiagram'][0] : null;
 
-        acc[symbol['c:Object'][0]['o:Entity'][0]['$'].Ref] = {
-            topLeft: {x: x1, y: y1},
-            bottomRight: {x: x2, y: y2}
-        };
+    const coordinatesByEntityId = conceptualModel !== null && conceptualModel.hasOwnProperty('c:Symbols')
+        ? conceptualModel['c:Symbols'][0]['o:EntitySymbol'].reduce((acc: { [key: string]: IRectangleCoordinates }, symbol: any) => {
+            const [x1, y2, x2, y1] = symbol['a:Rect'][0].replace(/\(|\)/g, '').split(',').map((coordinate: string) => parseInt(coordinate));
 
-        return acc;
-    }, {});
+            acc[symbol['c:Object'][0]['o:Entity'][0]['$'].Ref] = {
+                topLeft: {x: x1, y: y1},
+                bottomRight: {x: x2, y: y2}
+            };
+
+            return acc;
+        }, {})
+        : {};
 
     const domains = rootModel.hasOwnProperty('c:Domains')
         ? rootModel['c:Domains'][0]['o:Domain'].reduce((acc: { [key: string]: IDomain }, cur: any) => {
