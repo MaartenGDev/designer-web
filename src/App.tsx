@@ -2,7 +2,6 @@ import * as React from 'react';
 import {Component} from 'react';
 import xmlParser from './parsers/modelParser';
 import IModel from "./models/IModel";
-import Diagram from "./components/Diagram";
 import {SelectedDataType} from "./models/SelectedDataType";
 import EntityEditor from "./components/editors/EntityEditor";
 import {MdClose} from 'react-icons/md'
@@ -11,8 +10,10 @@ import IEntity from "./models/IEntity";
 import {DownloadHelper} from "./helpers/DownloadHelper";
 import {EntityIdentifierChangeAction} from "./models/EntityIdentifierChangeAction";
 import DomainsEditor from "./components/editors/DomainsEditor";
-import { ToastContainer, toast } from 'react-toastify';
+import {ToastContainer, toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import SizingRenderer from "./components/diagram/SizingRenderer";
+import Diagram from "./components/diagram/Diagram";
 
 interface IProps {
 }
@@ -21,6 +22,7 @@ interface IState {
     modelXml: string,
     model: IModel,
     selectedId: string | undefined,
+    scalingFactor: number | undefined,
     selectedDataType: SelectedDataType
 }
 
@@ -35,6 +37,7 @@ class App extends Component<IProps, IState> {
             relations: [],
             domains: {}
         },
+        scalingFactor: undefined,
         selectedId: undefined,
         selectedDataType: SelectedDataType.NONE
     };
@@ -99,7 +102,7 @@ class App extends Component<IProps, IState> {
     };
 
     private handleDomainRemoval = (domainId: string) => {
-        if(this.CDMModel.removeDomain(domainId)){
+        if (this.CDMModel.removeDomain(domainId)) {
             return this.handleModelSourceChange(this.CDMModel.getAsXml());
         }
 
@@ -141,7 +144,7 @@ class App extends Component<IProps, IState> {
     };
 
     render() {
-        const {model, selectedDataType, selectedId} = this.state;
+        const {model, selectedDataType, selectedId, scalingFactor} = this.state;
         const hasLoadedModel = model.entities.length > 0;
 
         return (
@@ -209,13 +212,19 @@ class App extends Component<IProps, IState> {
                         </div>
                     </div>
 
-                    <div id="diagram-window" className="pl-2 mt-12 flex-grow flex flex-col relative"
+                    <div id="diagram-window" className="pl-2 flex-grow flex flex-col relative"
                          onClick={_ => this.handleModelSelectionChange(SelectedDataType.NONE, undefined)}>
                         <ToastContainer autoClose={3000}/>
 
-                        {model.entities.length > 0
-                            ? <Diagram model={model} onModelSelectionChange={this.handleModelSelectionChange}/>
-                            : <p>No data</p>}
+                        {model.entities.length > 0 && scalingFactor === undefined &&
+                        <SizingRenderer model={model}
+                                        onDeterminedScale={(scalingFactor) => this.setState({scalingFactor})}/>
+                        }
+
+                        {model.entities.length > 0 && scalingFactor !== undefined
+                            ? <Diagram model={model} onModelSelectionChange={this.handleModelSelectionChange} scalingFactor={scalingFactor}/>
+                            : <p> no Data</p>
+                        }
                     </div>
                 </div>
             </div>

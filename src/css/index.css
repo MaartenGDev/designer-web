@@ -6189,7 +6189,11 @@ table {
 }
 
 .jtk-endpoint {
-  z-index: 5;
+  z-index: 7;
+}
+
+.entity {
+  z-index: 6;
 }
 
 path,
