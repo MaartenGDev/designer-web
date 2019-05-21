@@ -2,10 +2,11 @@ import React, {Component} from 'react';
 import IModel from "../../models/IModel";
 import Entity from "./Entity";
 import {DistanceHelper} from "../../helpers/DistanceHelper";
+import {Scaling} from "../../models/Scaling";
 
 interface IProps {
     model: IModel,
-    onDeterminedScale: (scale: number) => void
+    onDeterminedScale: (scaling: Scaling) => void
 }
 
 interface IState {
@@ -19,7 +20,7 @@ class SizingRenderer extends Component<IProps, IState> {
         const entity = this.props.model.entities[0];
         const realLength = DistanceHelper.calculateLengthBetweenXCoordinates(entity.location.bottomRight.x, entity.location.topLeft.x);
 
-        this.props.onDeterminedScale(localLength / realLength);
+        this.props.onDeterminedScale({downScalingFactor: localLength / realLength, upScalingFactor: realLength / localLength});
     }
 
     render() {

@@ -1,6 +1,7 @@
 import {DOMParser, XMLSerializer} from 'xmldom'
 import uid from 'uuid/v4';
 import {DataTypeHelper} from "../helpers/DataTypeHelper";
+import IRectangleCoordinates from "../models/IRectangleCoordinates";
 
 class CDMModel {
     private document: Document = new Document();
@@ -58,6 +59,21 @@ class CDMModel {
         attribute.setAttribute('Ref', dataItemId);
 
         return entity;
+    }
+
+    moveEntity(entityId: string, nextCoordinates: IRectangleCoordinates) {
+        const symbols = this.findNode('c:ConceptualDiagrams.o:ConceptualDiagram.c:Symbols');
+
+        const symbolNode = this.findChildNode(symbols, (node) => {
+            return node.nodeName === 'o:EntitySymbol' && this.findChildNode(node, (childNode) => {
+                return childNode.nodeName === 'c:Object' &&
+                    this.findChildNode(childNode, (objectNode) => objectNode.nodeName === 'o:Entity' && (objectNode as Element).getAttribute('Ref') === entityId) !== undefined
+            }) !== undefined
+        });
+
+        this.setAttributesOnNode(symbolNode, {
+            'a:Rect': `((${nextCoordinates.topLeft.x},${nextCoordinates.bottomRight.y}), (${nextCoordinates.bottomRight.x},${nextCoordinates.topLeft.y}))`
+        })
     }
 
     private findDataItem(dataItemId: string) {
@@ -268,7 +284,7 @@ class CDMModel {
         return domain;
     }
 
-    removeDomain(domainId: string) : boolean {
+    removeDomain(domainId: string): boolean {
         if (this.getUsageCount(domainId) > 0) {
             return false;
         }

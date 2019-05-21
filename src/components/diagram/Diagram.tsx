@@ -7,11 +7,14 @@ import {SelectedDataType} from "../../models/SelectedDataType";
 import {AnchorDirection} from "../../models/AnchorDirection";
 import EndpointFactory from "../../helpers/EndpointFactory";
 import {DistanceHelper} from "../../helpers/DistanceHelper";
+import {Scaling} from "../../models/Scaling";
+import IRectangleCoordinates from "../../models/IRectangleCoordinates";
 
 interface IProps {
     model: IModel,
-    scalingFactor: number,
-    onModelSelectionChange: (selectedDataType: SelectedDataType, selectedId: string | undefined) => void
+    scaling: Scaling,
+    onModelSelectionChange: (selectedDataType: SelectedDataType, selectedId: string | undefined) => void,
+    onEntityMoved: (entityId: string, nextCoordinates: IRectangleCoordinates) => void
 }
 
 interface IState {
@@ -25,16 +28,14 @@ class Diagram extends Component<IProps, IState> {
     private diagram: any;
 
     async componentDidMount() {
-        const {model} = this.props;
-
         this.diagram = await this.buildDiagramInstance();
-        this.loadDataForDiagram(model);
+        this.loadDiagramWithData(this.props);
     }
 
     async componentWillReceiveProps(nextProps: Readonly<IProps>, nextContext: any) {
         if (this.props.model === nextProps.model) return;
         await this.resetDiagram();
-        this.loadDataForDiagram(nextProps.model);
+        this.loadDiagramWithData(nextProps);
     }
 
     resetDiagram = async () => {
@@ -64,7 +65,9 @@ class Diagram extends Component<IProps, IState> {
         });
     }
 
-    loadDataForDiagram(model: IModel) {
+    loadDiagramWithData(props: IProps) {
+        const {model, scaling, onEntityMoved} = props
+
         this.diagram.batch(() => {
             const connections: { [key: string]: string[] } = model.relations.reduce((acc: { [key: string]: string[] }, cur) => {
                 if (!acc.hasOwnProperty(cur.from.ref)) {
@@ -100,7 +103,40 @@ class Diagram extends Component<IProps, IState> {
                 }
             });
 
-            this.diagram.draggable(entityElements, {force: true});
+            let startTop = 0;
+            let finalTop = 0;
+            let startLeft = 0;
+            let finalLeft = 0;
+
+            this.diagram.draggable(entityElements, {
+                start: function(e: any){
+                    startTop = parseInt(e.el.style.top);
+                    startLeft = parseInt(e.el.style.left);
+
+                },
+                stop: function(e: any){
+                    finalTop = parseInt(e.el.style.top);
+                    finalLeft = parseInt(e.el.style.left);
+
+                    const entity = model.entities.find(x => x.id === e.el.dataset.customId)!;
+
+                    const topDifference = Math.round((startTop - finalTop) * scaling.upScalingFactor);
+                    const leftDifference = Math.round((finalLeft - startLeft) * scaling.upScalingFactor);
+
+                    onEntityMoved(entity.id, {
+                        topLeft: {
+                            x: entity.location.topLeft.x + leftDifference,
+                            y: entity.location.topLeft.y + topDifference
+                        },
+                        bottomRight: {
+                            x: entity.location.bottomRight.x + leftDifference,
+                            y: entity.location.bottomRight.y + topDifference
+                        },
+                    });
+                }
+            });
+
+
         });
     }
 
@@ -112,7 +148,7 @@ class Diagram extends Component<IProps, IState> {
     }
 
     render() {
-        const {model, onModelSelectionChange, scalingFactor} = this.props;
+        const {model, onModelSelectionChange, scaling} = this.props;
         const [leftX, topY] = this.calculateScalingFactors(model);
         const topOffset = 10;
 
@@ -125,8 +161,8 @@ class Diagram extends Component<IProps, IState> {
                         entity={entity}
                         onModelSelectionChange={onModelSelectionChange}
                         position={{
-                            top: (DistanceHelper.calculateLengthBetweenYCoordinates(entity.location.topLeft.y, topY) * scalingFactor) + topOffset,
-                            left: DistanceHelper.calculateLengthBetweenXCoordinates(entity.location.topLeft.x, leftX) * scalingFactor,
+                            top: (DistanceHelper.calculateLengthBetweenYCoordinates(entity.location.topLeft.y, topY) * scaling.downScalingFactor) + topOffset,
+                            left: DistanceHelper.calculateLengthBetweenXCoordinates(entity.location.topLeft.x, leftX) * scaling.downScalingFactor,
                         }}
                     />
                 })}

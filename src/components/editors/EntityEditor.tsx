@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import IEntity from "../../models/IEntity";
 import IModel from "../../models/IModel";
-import IEntityAttribute from "../../models/IEntityAttribute";
 import {EntityIdentifierChangeAction} from "../../models/EntityIdentifierChangeAction";
 import IEntityIdentifier from "../../models/IEntityIdentifier";
 import {DataTypeHelper} from "../../helpers/DataTypeHelper";

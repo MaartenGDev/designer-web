@@ -79,8 +79,6 @@ const getAsJson = (model: any): IModel => {
         }, {})
         : [];
 
-    console.log(rootModel)
-
     const relationsKey = isPhysicalDiagram ? 'c:References' : 'c:Relationships';
     const relationObjectKey = isPhysicalDiagram ? 'o:Reference' : 'o:Relationship';
 

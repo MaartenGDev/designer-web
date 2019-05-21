@@ -14,6 +14,8 @@ import {ToastContainer, toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import SizingRenderer from "./components/diagram/SizingRenderer";
 import Diagram from "./components/diagram/Diagram";
+import {Scaling} from "./models/Scaling";
+import IRectangleCoordinates from "./models/IRectangleCoordinates";
 
 interface IProps {
 }
@@ -22,7 +24,7 @@ interface IState {
     modelXml: string,
     model: IModel,
     selectedId: string | undefined,
-    scalingFactor: number | undefined,
+    scaling: Scaling | undefined,
     selectedDataType: SelectedDataType
 }
 
@@ -37,7 +39,7 @@ class App extends Component<IProps, IState> {
             relations: [],
             domains: {}
         },
-        scalingFactor: undefined,
+        scaling: undefined,
         selectedId: undefined,
         selectedDataType: SelectedDataType.NONE
     };
@@ -114,6 +116,11 @@ class App extends Component<IProps, IState> {
         this.handleModelSourceChange(this.CDMModel.getAsXml());
     };
 
+    private handleEntityMoved = (entityId: string, nextCoordinates: IRectangleCoordinates) => {
+        this.CDMModel.moveEntity(entityId, nextCoordinates);
+        this.handleModelSourceChange(this.CDMModel.getAsXml());
+    }
+
     private getEditableDataForSelection = (model: IModel, selectedDataType: SelectedDataType, selectedId: string): IEntity | undefined => {
         if (selectedDataType === SelectedDataType.NONE) return undefined;
 
@@ -144,7 +151,7 @@ class App extends Component<IProps, IState> {
     };
 
     render() {
-        const {model, selectedDataType, selectedId, scalingFactor} = this.state;
+        const {model, selectedDataType, selectedId, scaling} = this.state;
         const hasLoadedModel = model.entities.length > 0;
 
         return (
@@ -216,13 +223,13 @@ class App extends Component<IProps, IState> {
                          onClick={_ => this.handleModelSelectionChange(SelectedDataType.NONE, undefined)}>
                         <ToastContainer autoClose={3000}/>
 
-                        {model.entities.length > 0 && scalingFactor === undefined &&
+                        {model.entities.length > 0 && scaling === undefined &&
                         <SizingRenderer model={model}
-                                        onDeterminedScale={(scalingFactor) => this.setState({scalingFactor})}/>
+                                        onDeterminedScale={(scaling) => this.setState({scaling})}/>
                         }
 
-                        {model.entities.length > 0 && scalingFactor !== undefined
-                            ? <Diagram model={model} onModelSelectionChange={this.handleModelSelectionChange} scalingFactor={scalingFactor}/>
+                        {model.entities.length > 0 && scaling !== undefined
+                            ? <Diagram model={model} onModelSelectionChange={this.handleModelSelectionChange} onEntityMoved={this.handleEntityMoved} scaling={scaling}/>
                             : <p> no Data</p>
                         }
                     </div>
