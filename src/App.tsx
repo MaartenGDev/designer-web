@@ -60,6 +60,11 @@ class App extends Component<IProps, IState> {
         });
     };
 
+    private createEntity = (name: string) => {
+        this.CDMModel.createEntity(name);
+        this.handleModelSourceChange(this.CDMModel.getAsXml());
+    };
+
     private handleEntityChange = (entityId: string, attributeName: string, value: any) => {
         this.CDMModel.setAttributeForEntity(entityId, attributeName, value);
         this.handleModelSourceChange(this.CDMModel.getAsXml());
@@ -119,7 +124,7 @@ class App extends Component<IProps, IState> {
     private handleEntityMoved = (entityId: string, nextCoordinates: IRectangleCoordinates) => {
         this.CDMModel.moveEntity(entityId, nextCoordinates);
         this.handleModelSourceChange(this.CDMModel.getAsXml());
-    }
+    };
 
     private getEditableDataForSelection = (model: IModel, selectedDataType: SelectedDataType, selectedId: string): IEntity | undefined => {
         if (selectedDataType === SelectedDataType.NONE) return undefined;
@@ -202,6 +207,10 @@ class App extends Component<IProps, IState> {
                                 {hasLoadedModel && <span
                                   className="uppercase text-grey-darker font-bold cursor-pointer mr-6 inline-block cursor-pointer ml-12"
                                   onClick={_ => this.handleModelSelectionChange(SelectedDataType.DOMAINS)}>DOMAINS</span>}
+
+                                {hasLoadedModel && <span
+                                  className="uppercase text-grey-darker font-bold cursor-pointer mr-6 inline-block cursor-pointer ml-12"
+                                  onClick={_ => this.createEntity('entity_1')}>ADD ENTITY</span>}
                             </div>
                             <div className='flex items-center'>
                                 {hasLoadedModel && <span

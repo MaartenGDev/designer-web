@@ -76,6 +76,47 @@ class CDMModel {
         })
     }
 
+    createEntity(name: string) {
+        const entities = this.findNode('c:Entities');
+        const symbols = this.findNode('c:ConceptualDiagrams.o:ConceptualDiagram.c:Symbols');
+
+        const entityId = this.getNextUniqueId();
+        const entityNode = this.buildBasicNode('o:Entity', name, entityId);
+
+        const entitySymbolNode = this.document.createElement('o:EntitySymbol');
+        entitySymbolNode.setAttribute('Id', this.getNextUniqueId());
+
+        this.setAttributesOnNode(entitySymbolNode, {
+            'a:CreationDate': '1556106851',
+            'a:ModificationDate': '1556106851',
+            'a:IconMode': '-1',
+            'a:Rect': '((34395,-5606), (53577,3759))',
+            'a:LineColor': '11184640',
+            'a:FillColor': '11184640',
+            'a:ShadowColor': '11184640',
+            'a:FontList': `STRN 0 Arial,8,N
+                                    DISPNAME 0 Arial,8,N
+                                    Attributes 0 Arial,8,N
+                                    EntityPrimaryAttribute 0 Arial,8,U
+                                    Identifiers 0 Arial,8,N
+                                    LABL 0 Arial,8,N`,
+            'a:BrushStyle': '6',
+            'a:GradientFillMode': '65',
+            'a:GradientEndColor': '16777215'
+        });
+
+        const symbolObject = this.document.createElement('c:Object');
+        const entityRefNode = this.document.createElement('o:Entity');
+        entityRefNode.setAttribute('Ref', entityId);
+
+        symbolObject.appendChild(entityRefNode);
+        entitySymbolNode.appendChild(symbolObject);
+
+        symbols.appendChild(entitySymbolNode);
+
+        entities.appendChild(entityNode)
+    }
+
     private findDataItem(dataItemId: string) {
         return this.findChildNode(this.findNode('c:DataItems'), (node) => {
             return node.nodeName === 'o:DataItem' && (node as Element).getAttribute('Id') === dataItemId
