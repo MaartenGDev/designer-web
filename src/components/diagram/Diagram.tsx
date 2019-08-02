@@ -9,12 +9,14 @@ import EndpointFactory from "../../helpers/EndpointFactory";
 import {DistanceHelper} from "../../helpers/DistanceHelper";
 import {Scaling} from "../../models/Scaling";
 import IRectangleCoordinates from "../../models/IRectangleCoordinates";
+import IRelation from "../../models/IRelation";
 
 interface IProps {
     model: IModel,
     scaling: Scaling,
     onModelSelectionChange: (selectedDataType: SelectedDataType, selectedId: string | undefined) => void,
     onEntityMoved: (entityId: string, nextCoordinates: IRectangleCoordinates) => void
+    onRelationClicked: (relation: IRelation) => void
 }
 
 interface IState {
@@ -54,8 +56,12 @@ class Diagram extends Component<IProps, IState> {
                     Container: 'canvas'
                 });
 
-                instance.bind('click', (conn: Connection) => {
-                    this.diagram.detach(conn);
+                instance.bind('click', (conn: Connection, ev) => {
+                    const parameters = (conn as any).getParameters();
+                    const relation = this.props.model.relations.find(x => x.id === parameters.relationId)!;
+
+                    ev.stopPropagation();
+                    this.props.onRelationClicked(relation);
                 });
 
                 instance.bind('beforeDetach', (info: OnConnectionBindInfo) => confirm('Delete connection?'));
@@ -69,12 +75,12 @@ class Diagram extends Component<IProps, IState> {
         const {model, scaling, onEntityMoved} = props
 
         this.diagram.batch(() => {
-            const connections: { [key: string]: string[] } = model.relations.reduce((acc: { [key: string]: string[] }, cur) => {
+            const connections: { [key: string]: {relationId: string, ref: string}[] } = model.relations.reduce((acc: { [key: string]: {relationId: string, ref: string}[] }, cur) => {
                 if (!acc.hasOwnProperty(cur.from.ref)) {
                     acc[cur.from.ref] = [];
                 }
 
-                acc[cur.from.ref] = [...acc[cur.from.ref], cur.to.ref];
+                acc[cur.from.ref] = [...acc[cur.from.ref], {relationId: cur.id, ref: cur.to.ref}];
                 return acc;
             }, {});
 
@@ -84,21 +90,23 @@ class Diagram extends Component<IProps, IState> {
                 if (connections.hasOwnProperty(sourceId)) {
                     const connected = connections[sourceId];
 
-                    connected.forEach((targetId, index) => {
+                    connected.forEach((target: {relationId: string, ref: string}, index) => {
                         const sourceElem = document.querySelector('.entity-' + sourceId)!;
-                        const targetElem = document.querySelector('.entity-' + targetId)!;
-                        const connectionsToSameEntity = connected.filter(id => id === targetId).length;
-                        const matchIndex = index - connected.findIndex(x => x === targetId);
+                        const targetElem = document.querySelector('.entity-' + target.ref)!;
+                        const connectionsToSameEntity = connected.filter(id => id.ref === target.ref).length;
+                        const matchIndex = index - connected.findIndex(x => x.ref === target.ref);
                         let direction = AnchorDirection.FLOW;
 
                         if (connectionsToSameEntity >= 2) {
                             direction = matchIndex === 0 ? AnchorDirection.BOTTOM : (matchIndex === 1 ? AnchorDirection.TOP : AnchorDirection.FLOW)
                         }
 
-                        this.diagram.connect({
+                        const conn = this.diagram.connect({
                             source: this.diagram.addEndpoint(sourceElem, EndpointFactory.create(model, matchIndex), {anchor: EndpointFactory.getAnchorPoints(direction)}),
                             target: this.diagram.addEndpoint(targetElem, EndpointFactory.create(model, matchIndex), {anchor: EndpointFactory.getAnchorPoints(direction)}),
                         });
+
+                        conn.setParameter('relationId', target.relationId);
                     });
                 }
             });

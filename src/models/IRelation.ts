@@ -1,4 +1,4 @@
-interface IRelation {
+export default interface IRelation {
     id: string,
     name: string,
     from: {
@@ -10,5 +10,3 @@ interface IRelation {
         cardinality: string
     }
 }
-
-export default IRelation;

@@ -3,11 +3,10 @@ import IAttribute from "./IAttribute";
 import IRelation from "./IRelation";
 import IDomain from "./IDomain";
 
-interface IModel {
+export default interface IModel {
     entities: IEntity[],
     dataItems: { [key: string]: IAttribute },
     domains: { [key: string]: IDomain },
     relations: IRelation[],
 }
 
-export default IModel;

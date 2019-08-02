@@ -10,12 +10,15 @@ import IEntity from "./models/IEntity";
 import {DownloadHelper} from "./helpers/DownloadHelper";
 import {EntityIdentifierChangeAction} from "./models/EntityIdentifierChangeAction";
 import DomainsEditor from "./components/editors/DomainsEditor";
-import {ToastContainer, toast} from 'react-toastify';
+import {toast, ToastContainer} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import SizingRenderer from "./components/diagram/SizingRenderer";
 import Diagram from "./components/diagram/Diagram";
 import {Scaling} from "./models/Scaling";
 import IRectangleCoordinates from "./models/IRectangleCoordinates";
+import {DIAGRAM} from './demo'
+import RelationEditor from "./components/editors/RelationEditor";
+import IRelation from "./models/IRelation";
 
 interface IProps {
 }
@@ -43,6 +46,10 @@ class App extends Component<IProps, IState> {
         selectedId: undefined,
         selectedDataType: SelectedDataType.NONE
     };
+
+    componentDidMount(): void {
+        this.handleModelSourceChange(DIAGRAM);
+    }
 
     handleModelSourceChange = (xml: string) => {
         xmlParser(xml, (data: IModel) => {
@@ -192,6 +199,13 @@ class App extends Component<IProps, IState> {
                         onDomainRemoval={this.handleDomainRemoval}
                         onDomainCreation={this.handleDomainCreation}
                       />}
+
+                      {selectedDataType === SelectedDataType.RELATION &&
+                      <RelationEditor
+                          relation={model.relations.find((x: IRelation) => x.id === selectedId)!}
+                          model={model}
+                          onRelationChange={() => {}}
+                      />}
                   </div>
                 </div>}
 
@@ -238,7 +252,12 @@ class App extends Component<IProps, IState> {
                         }
 
                         {model.entities.length > 0 && scaling !== undefined
-                            ? <Diagram model={model} onModelSelectionChange={this.handleModelSelectionChange} onEntityMoved={this.handleEntityMoved} scaling={scaling}/>
+                            ? <Diagram
+                                model={model}
+                                onModelSelectionChange={this.handleModelSelectionChange}
+                                onEntityMoved={this.handleEntityMoved}
+                                onRelationClicked={relation => this.handleModelSelectionChange(SelectedDataType.RELATION, relation.id)}
+                                scaling={scaling!}/>
                             : <p> no Data</p>
                         }
                     </div>
