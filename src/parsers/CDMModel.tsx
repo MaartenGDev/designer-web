@@ -307,10 +307,19 @@ class CDMModel {
         return entity;
     }
 
-    private findDomainById(domainsNode: Node, id: string) {
-        return this.findChildNode(domainsNode, (node) => {
-            return node.nodeName === 'o:Domain' && (node as Element).getAttribute('Id') === id
+    private findNodeById(parentNode: Node, type: string, id: string) {
+        return this.findChildNode(parentNode, (node) => {
+            return node.nodeName === type && (node as Element).getAttribute('Id') === id
         });
+    }
+
+    private findDomainById(domainsNode: Node, id: string) {
+        return this.findNodeById(domainsNode, 'o:Domain', id);
+    }
+
+    private findRelationById(id: string) {
+        return this.findNodeById(this.findNode('c:Relationships'), 'o:Relationship', id);
+
     }
 
     setDataTypeAndLengthForDomain(domainId: string, name: string, dataType: string, length: number) {
@@ -351,6 +360,47 @@ class CDMModel {
         domainsNode.appendChild(domainNode);
 
         return domainsNode;
+    }
+
+
+    setAttributeForRelation(relationId: string, attributeName: string, value: any) {
+        const relation = this.findRelationById(relationId);
+
+        this.setAttributesOnNode(relation, {
+            [attributeName]: value
+        });
+
+        return relation;
+    }
+
+    setRefOfObjectInRelation(relationId: string, objectName: string, targetEntityId: string){
+        const relationNode = this.findRelationById(relationId);
+
+        const fromEntityRefNode = this.findChildNode(this.findChildNode(relationNode, (node) => {
+            return node.nodeName === objectName
+        }), (node) => {
+            return node.nodeName === 'o:Entity';
+        });
+
+        fromEntityRefNode.setAttribute("Ref", targetEntityId);
+
+        return relationNode;
+    }
+
+    setFromRefOfRelation(relationId: string, targetEntityId: string) {
+        return this.setRefOfObjectInRelation(relationId, 'c:Object1', targetEntityId);
+    }
+
+    setToRefOfRelation(relationId: string, targetEntityId: string) {
+        return this.setRefOfObjectInRelation(relationId, 'c:Object2', targetEntityId);
+    }
+
+    setFromCardinalityOfRelation(relationId: string, nextCardinality: string){
+        this.setAttributeForRelation(relationId, 'a:Entity1ToEntity2RoleCardinality', nextCardinality);
+    }
+
+    setToCardinalityOfRelation(relationId: string, nextCardinality: string){
+        this.setAttributeForRelation(relationId, 'a:Entity2ToEntity1RoleCardinality', nextCardinality);
     }
 
     private buildBasicNode(nodeName: string, name: string, identifierId?: string, code?: string) {

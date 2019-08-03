@@ -48,6 +48,7 @@ class App extends Component<IProps, IState> {
     };
 
     componentDidMount(): void {
+        this.CDMModel.loadFromXml(DIAGRAM);
         this.handleModelSourceChange(DIAGRAM);
     }
 
@@ -133,6 +134,32 @@ class App extends Component<IProps, IState> {
         this.handleModelSourceChange(this.CDMModel.getAsXml());
     };
 
+
+    private handleRelationChange = (relationId: string, attributeName: string, value: any) => {
+        this.CDMModel.setAttributeForRelation(relationId, attributeName, value);
+        this.handleModelSourceChange(this.CDMModel.getAsXml());
+    };
+
+    private handleRelationFromRefChange = (relationId: string, targetEntityId: string) => {
+        this.CDMModel.setFromRefOfRelation(relationId, targetEntityId);
+        this.handleModelSourceChange(this.CDMModel.getAsXml());
+    };
+
+    private handleRelationToRefChange = (relationId: string, targetEntityId: string) => {
+        this.CDMModel.setToRefOfRelation(relationId, targetEntityId);
+        this.handleModelSourceChange(this.CDMModel.getAsXml());
+    };
+
+    private handleRelationFromCardinalityChange = (relationId: string, nextCardinality: string) => {
+        this.CDMModel.setFromCardinalityOfRelation(relationId, nextCardinality);
+        this.handleModelSourceChange(this.CDMModel.getAsXml());
+    };
+
+    private handleRelationToCardinalityChange = (relationId: string, nextCardinality: string) => {
+        this.CDMModel.setToCardinalityOfRelation(relationId, nextCardinality);
+        this.handleModelSourceChange(this.CDMModel.getAsXml());
+    };
+
     private getEditableDataForSelection = (model: IModel, selectedDataType: SelectedDataType, selectedId: string): IEntity | undefined => {
         if (selectedDataType === SelectedDataType.NONE) return undefined;
         if (selectedDataType === SelectedDataType.ENTITY) return model.entities.find(x => x.id === selectedId);
@@ -169,44 +196,48 @@ class App extends Component<IProps, IState> {
             <div className="relative w-full">
                 {selectedDataType !== SelectedDataType.NONE &&
                 <div className='fixed pin-b pin-r mr-6 bg-white z-20 shadow-lg'>
-                  <div className='flex justify-between border-b border-grey-lighter p-4 mb-2'>
-                    <p
-                      className='uppercase tracking-wide text-grey-darker text-base font-bold'>
-                        {selectedDataType === SelectedDataType.ENTITY && 'Edit Entity'}
-                        {selectedDataType === SelectedDataType.DOMAINS && 'Edit Domains'}
-                        {selectedDataType === SelectedDataType.RELATION && 'Edit Relation'}
-                    </p>
-                    <MdClose onClick={_ => this.handleModelSelectionChange(SelectedDataType.NONE, undefined)}/>
-                  </div>
-                  <div className='p-2'>
-                      {selectedDataType === SelectedDataType.ENTITY &&
-                      <EntityEditor
-                        model={model}
-                        entity={this.getEditableDataForSelection(model, selectedDataType, selectedId!) as IEntity}
-                        onEntityChange={this.handleEntityChange}
-                        onEntityAttributeChange={this.handleEntityAttributeChange}
-                        onEntityAttributeDomainChange={this.handleEntityAttributeDomainChange}
-                        onEntityIdentifierChange={this.handleEntityIdentifierChange}
-                        onEntityAttributeCreation={this.handleEntityAttributeCreation}
-                        onEntityAttributeRemoval={this.handleEntityAttributeRemoval}
-                      />}
+                    <div className='flex justify-between border-b border-grey-lighter p-4 mb-2'>
+                        <p
+                            className='uppercase tracking-wide text-grey-darker text-base font-bold'>
+                            {selectedDataType === SelectedDataType.ENTITY && 'Edit Entity'}
+                            {selectedDataType === SelectedDataType.DOMAINS && 'Edit Domains'}
+                            {selectedDataType === SelectedDataType.RELATION && 'Edit Relation'}
+                        </p>
+                        <MdClose onClick={_ => this.handleModelSelectionChange(SelectedDataType.NONE, undefined)}/>
+                    </div>
+                    <div className='p-2'>
+                        {selectedDataType === SelectedDataType.ENTITY &&
+                        <EntityEditor
+                            model={model}
+                            entity={this.getEditableDataForSelection(model, selectedDataType, selectedId!) as IEntity}
+                            onEntityChange={this.handleEntityChange}
+                            onEntityAttributeChange={this.handleEntityAttributeChange}
+                            onEntityAttributeDomainChange={this.handleEntityAttributeDomainChange}
+                            onEntityIdentifierChange={this.handleEntityIdentifierChange}
+                            onEntityAttributeCreation={this.handleEntityAttributeCreation}
+                            onEntityAttributeRemoval={this.handleEntityAttributeRemoval}
+                        />}
 
-                      {selectedDataType === SelectedDataType.DOMAINS &&
-                      <DomainsEditor
-                        domains={Object.values(model.domains)}
-                        model={model}
-                        onDomainChange={this.handleDomainChange}
-                        onDomainRemoval={this.handleDomainRemoval}
-                        onDomainCreation={this.handleDomainCreation}
-                      />}
+                        {selectedDataType === SelectedDataType.DOMAINS &&
+                        <DomainsEditor
+                            domains={Object.values(model.domains)}
+                            model={model}
+                            onDomainChange={this.handleDomainChange}
+                            onDomainRemoval={this.handleDomainRemoval}
+                            onDomainCreation={this.handleDomainCreation}
+                        />}
 
-                      {selectedDataType === SelectedDataType.RELATION &&
-                      <RelationEditor
-                          relation={model.relations.find((x: IRelation) => x.id === selectedId)!}
-                          model={model}
-                          onRelationChange={() => {}}
-                      />}
-                  </div>
+                        {selectedDataType === SelectedDataType.RELATION &&
+                        <RelationEditor
+                            relation={model.relations.find((x: IRelation) => x.id === selectedId)!}
+                            model={model}
+                            onRelationChange={this.handleRelationChange}
+                            onRelationFromRefChange={this.handleRelationFromRefChange}
+                            onRelationFromCardinalityChange={this.handleRelationFromCardinalityChange}
+                            onRelationToRefChange={this.handleRelationToRefChange}
+                            onRelationToCardinalityChange={this.handleRelationToCardinalityChange}
+                        />}
+                    </div>
                 </div>}
 
                 <div
@@ -219,17 +250,17 @@ class App extends Component<IProps, IState> {
                                 <span className="text-2xl font-bold">DesignerWeb</span>
 
                                 {hasLoadedModel && <span
-                                  className="uppercase text-grey-darker font-bold cursor-pointer mr-6 inline-block cursor-pointer ml-12"
-                                  onClick={_ => this.handleModelSelectionChange(SelectedDataType.DOMAINS)}>DOMAINS</span>}
+                                    className="uppercase text-grey-darker font-bold cursor-pointer mr-6 inline-block cursor-pointer ml-12"
+                                    onClick={_ => this.handleModelSelectionChange(SelectedDataType.DOMAINS)}>DOMAINS</span>}
 
                                 {hasLoadedModel && <span
-                                  className="uppercase text-grey-darker font-bold cursor-pointer mr-6 inline-block cursor-pointer ml-12"
-                                  onClick={_ => this.createEntity('entity_1')}>ADD ENTITY</span>}
+                                    className="uppercase text-grey-darker font-bold cursor-pointer mr-6 inline-block cursor-pointer ml-12"
+                                    onClick={_ => this.createEntity('entity_1')}>ADD ENTITY</span>}
                             </div>
                             <div className='flex items-center'>
                                 {hasLoadedModel && <span
-                                  className="uppercase text-grey-darker font-bold cursor-pointer mr-6 inline-block cursor-pointer"
-                                  onClick={this.downloadModel}>Export</span>}
+                                    className="uppercase text-grey-darker font-bold cursor-pointer mr-6 inline-block cursor-pointer"
+                                    onClick={this.downloadModel}>Export</span>}
 
                                 <div className="upload-btn-wrapper cursor-pointer">
                                     <span

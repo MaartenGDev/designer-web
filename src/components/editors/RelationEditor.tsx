@@ -1,12 +1,15 @@
 import React, {Component} from 'react';
 import IModel from "../../models/IModel";
 import IRelation from "../../models/IRelation";
-import {DataTypeHelper} from "../../helpers/DataTypeHelper";
 
 interface IProps {
     relation: IRelation,
     model: IModel,
     onRelationChange: (relationId: string, attributeName: string, value: any) => void
+    onRelationFromRefChange: (relationId: string, targetEntityId: string) => void
+    onRelationFromCardinalityChange: (relationId: string, nextCardinality: string) => void
+    onRelationToRefChange: (relationId: string, targetEntityId: string) => void
+    onRelationToCardinalityChange: (relationId: string, nextCardinality: string) => void
 }
 
 interface IState {
@@ -21,7 +24,7 @@ export default class RelationEditor extends Component<IProps, IState> {
     cardinalityOptions = ['0,1', '0,n', '1,1', '1,n'];
 
     render() {
-        const {relation, model, onRelationChange} = this.props;
+        const {relation, model, onRelationChange, onRelationFromRefChange, onRelationToRefChange, onRelationFromCardinalityChange, onRelationToCardinalityChange} = this.props;
 
         return (
             <div>
@@ -47,7 +50,7 @@ export default class RelationEditor extends Component<IProps, IState> {
                             <td className='table__cell'>
                                 <select className='form__input form__input--select'
                                         value={relation.from.ref}
-                                        onChange={e => {}}>
+                                        onChange={e => onRelationFromRefChange(relation.id, e.target.value)}>
                                     {model.entities.map(entity => <option key={entity.id} value={entity.id}>{entity.name}</option>)}
                                 </select>
                             </td>
@@ -55,21 +58,21 @@ export default class RelationEditor extends Component<IProps, IState> {
                             <td className='table__cell'>
                                 <select className='form__input form__input--select'
                                         value={relation.from.cardinality}
-                                        onChange={e => {}}>
+                                        onChange={e => onRelationFromCardinalityChange(relation.id, e.target.value)}>
                                     {this.cardinalityOptions.map(cardinality => <option key={cardinality} value={cardinality}>{cardinality}</option>)}
                                 </select>
                             </td>
                             <td className='table__cell'>
                                 <select className='form__input form__input--select'
                                         value={relation.to.ref}
-                                        onChange={e => {}}>
+                                        onChange={e => onRelationToRefChange(relation.id, e.target.value)}>
                                     {model.entities.map(entity => <option key={entity.id} value={entity.id}>{entity.name}</option>)}
                                 </select>
                             </td>
                             <td className='table__cell'>
                                 <select className='form__input form__input--select'
                                         value={relation.to.cardinality}
-                                        onChange={e => {}}>
+                                        onChange={e => onRelationToCardinalityChange(relation.id, e.target.value)}>
                                     {this.cardinalityOptions.map(cardinality => <option key={cardinality} value={cardinality}>{cardinality}</option>)}
                                 </select>
                             </td>
