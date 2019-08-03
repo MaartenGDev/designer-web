@@ -135,7 +135,6 @@ class App extends Component<IProps, IState> {
 
     private getEditableDataForSelection = (model: IModel, selectedDataType: SelectedDataType, selectedId: string): IEntity | undefined => {
         if (selectedDataType === SelectedDataType.NONE) return undefined;
-
         if (selectedDataType === SelectedDataType.ENTITY) return model.entities.find(x => x.id === selectedId);
 
         return undefined
@@ -175,6 +174,7 @@ class App extends Component<IProps, IState> {
                       className='uppercase tracking-wide text-grey-darker text-base font-bold'>
                         {selectedDataType === SelectedDataType.ENTITY && 'Edit Entity'}
                         {selectedDataType === SelectedDataType.DOMAINS && 'Edit Domains'}
+                        {selectedDataType === SelectedDataType.RELATION && 'Edit Relation'}
                     </p>
                     <MdClose onClick={_ => this.handleModelSelectionChange(SelectedDataType.NONE, undefined)}/>
                   </div>
