@@ -9,12 +9,15 @@ class CDMModel {
     public loadFromXml(xml: string) {
         this.document = new DOMParser().parseFromString(xml);
     }
-
-    public findNode(pathRelativeFromModel: string) {
-        return this.getNestedAttribute(this.document, 'o:RootObject.c:Children.o:Model.' + pathRelativeFromModel);
+    getModelNode(){
+        return this.findNodeByPath(this.document, 'o:RootObject.c:Children.o:Model');
     }
 
-    private getNestedAttribute(document: Document, path: string): Element {
+    public findNode(pathRelativeFromModel: string) {
+        return this.findNodeByPath(this.document, 'o:RootObject.c:Children.o:Model.' + pathRelativeFromModel);
+    }
+
+    private findNodeByPath(document: Document, path: string): Element {
         let lastNode: Element = document.documentElement;
 
         path.split('.').forEach(nodeName => {
@@ -81,7 +84,7 @@ class CDMModel {
         const symbols = this.findNode('c:ConceptualDiagrams.o:ConceptualDiagram.c:Symbols');
 
         const entityId = this.getNextUniqueId();
-        const entityNode = this.buildBasicNode('o:Entity', name, entityId);
+        const entityNode = this.buildBasicNode('o:Entity', name, {identifierId: entityId});
 
         const entitySymbolNode = this.document.createElement('o:EntitySymbol');
         entitySymbolNode.setAttribute('Id', this.getNextUniqueId());
@@ -181,7 +184,13 @@ class CDMModel {
         const attributeNode = this.buildBasicNode('o:EntityAttribute', name);
         attributesNode.appendChild(attributeNode);
 
-        const dataItemsNode = this.findNode('c:DataItems');
+        let dataItemsNode = this.findNode('c:DataItems');
+
+        if(dataItemsNode === undefined){
+            dataItemsNode = this.document.createElement('c:DataItems');
+            this.getModelNode().appendChild(dataItemsNode);
+        }
+
         const dataItem = this.buildBasicNode('o:DataItem', name);
 
         this.setAttributesOnNode(dataItem, {
@@ -293,7 +302,7 @@ class CDMModel {
         }
 
 
-        const identifierNode = this.buildBasicNode('o:Identifier', 'Identifier_' + attributeIdUsedForIdentifier, identifierId);
+        const identifierNode = this.buildBasicNode('o:Identifier', 'Identifier_' + attributeIdUsedForIdentifier, {identifierId});
 
         const identifierAttributesNode = this.document.createElement('c:Identifier.Attributes');
         const attributeRefNode = this.document.createElement('o:EntityAttribute');
@@ -375,7 +384,6 @@ class CDMModel {
 
     setRefOfObjectInRelation(relationId: string, objectName: string, targetEntityId: string){
         const relationNode = this.findRelationById(relationId);
-
         const fromEntityRefNode = this.findChildNode(this.findChildNode(relationNode, (node) => {
             return node.nodeName === objectName
         }), (node) => {
@@ -403,18 +411,18 @@ class CDMModel {
         this.setAttributeForRelation(relationId, 'a:Entity2ToEntity1RoleCardinality', nextCardinality);
     }
 
-    private buildBasicNode(nodeName: string, name: string, identifierId?: string, code?: string) {
+    private buildBasicNode(nodeName: string, name: string, overrides: {identifierId?: string, code?: string, objectId?: string}= {identifierId: undefined, code: undefined, objectId: undefined}) {
         const node = this.document.createElement(nodeName);
-        node.setAttribute('Id', identifierId === undefined ? this.getNextUniqueId() : identifierId);
+        node.setAttribute('Id', overrides.identifierId === undefined ? this.getNextUniqueId() : overrides.identifierId);
 
         this.setAttributesOnNode(node, {
-            'a:ObjectID': uid().toUpperCase(),
+            'a:ObjectID': overrides.objectId || this.getUid(),
             'a:CreationDate': '1556190897',
             'a:Creator': 'webversion',
             'a:ModificationDate': '1556190923',
             'a:Modifier': 'webversion',
             'a:Name': name,
-            'a:Code': code || uid().toUpperCase()
+            'a:Code': overrides.code || this.getUid()
         });
 
         return node;
@@ -449,6 +457,10 @@ class CDMModel {
         const nextId = Math.max(...ids) + 1;
 
         return 'o' + nextId;
+    }
+
+    getUid(){
+        return uid().toUpperCase();
     }
 
     getAsXml() {
