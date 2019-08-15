@@ -64,8 +64,6 @@ class Diagram extends Component<IProps, IState> {
                     this.props.onRelationClicked(relation);
                 });
 
-                instance.bind('beforeDetach', (info: OnConnectionBindInfo) => confirm('Delete connection?'));
-
                 res(instance);
             });
         });
@@ -100,6 +98,10 @@ class Diagram extends Component<IProps, IState> {
                         if (connectionsToSameEntity >= 2) {
                             direction = matchIndex === 0 ? AnchorDirection.BOTTOM : (matchIndex === 1 ? AnchorDirection.TOP : AnchorDirection.FLOW)
                         }
+
+                        this.diagram.makeSource(sourceElem, {filter: '.connect-point', ...EndpointFactory.create(model, matchIndex)}, {anchor: EndpointFactory.getAnchorPoints(direction)});
+                        this.diagram.makeSource(targetElem, {filter: '.connect-point', ...EndpointFactory.create(model, matchIndex)}, {anchor: EndpointFactory.getAnchorPoints(direction)});
+
 
                         const conn = this.diagram.connect({
                             source: this.diagram.addEndpoint(sourceElem, EndpointFactory.create(model, matchIndex), {anchor: EndpointFactory.getAnchorPoints(direction)}),

@@ -39,7 +39,9 @@ const Entity = ({className, entity, model, onModelSelectionChange, position}: IP
                 onModelSelectionChange(SelectedDataType.ENTITY, entity.id)
             }
         }}>
-            <div className='p-4 border-b border-grey-lighter font-bold text-grey-darker'>
+
+            <div className='p-4 border-b border-grey-lighter relative font-bold text-grey-darker'>
+                <span className='connect-point rounded-full w-6 h-6 bg-blue text-white p-2 inline-block absolute pin-r flex justify-center items-center' style={{marginTop: '-28px', marginRight: '-12px'}}>+</span>
                 <p>{entity.name}</p>
             </div>
             <div className='p-4'>
