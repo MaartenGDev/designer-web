@@ -411,6 +411,13 @@ class CDMModel {
         this.setAttributeForRelation(relationId, 'a:Entity2ToEntity1RoleCardinality', nextCardinality);
     }
 
+    deleteRelation(relationId: string){
+        const relationships = this.findNode('c:Relationships');
+        const relationship = this.findNodeById(relationships, 'o:Relationship', relationId);
+
+        relationships.removeChild(relationship);
+    }
+
     private buildBasicNode(nodeName: string, name: string, overrides: {identifierId?: string, code?: string, objectId?: string}= {identifierId: undefined, code: undefined, objectId: undefined}) {
         const node = this.document.createElement(nodeName);
         node.setAttribute('Id', overrides.identifierId === undefined ? this.getNextUniqueId() : overrides.identifierId);

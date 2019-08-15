@@ -160,6 +160,12 @@ class App extends Component<IProps, IState> {
         this.handleModelSourceChange(this.CDMModel.getAsXml());
     };
 
+    private handleRelationDelete = (relationId: string) => {
+        this.CDMModel.deleteRelation(relationId);
+        this.handleModelSelectionChange(SelectedDataType.NONE, undefined);
+        this.handleModelSourceChange(this.CDMModel.getAsXml());
+    };
+
     private getEditableDataForSelection = (model: IModel, selectedDataType: SelectedDataType, selectedId: string): IEntity | undefined => {
         if (selectedDataType === SelectedDataType.NONE) return undefined;
         if (selectedDataType === SelectedDataType.ENTITY) return model.entities.find(x => x.id === selectedId);
@@ -231,6 +237,7 @@ class App extends Component<IProps, IState> {
                         <RelationEditor
                             relation={model.relations.find((x: IRelation) => x.id === selectedId)!}
                             model={model}
+                            onRelationDelete={this.handleRelationDelete}
                             onRelationChange={this.handleRelationChange}
                             onRelationFromRefChange={this.handleRelationFromRefChange}
                             onRelationFromCardinalityChange={this.handleRelationFromCardinalityChange}
