@@ -424,9 +424,9 @@ class CDMModel {
         this.setAttributeForRelation(relationId, 'a:Entity2ToEntity1RoleCardinality', nextCardinality);
     }
 
-    createRelation(sourceEntityId: string, targetEntityId: string, cardinality: string){
+    createRelation(sourceEntityId: string, targetEntityId: string, name: string, cardinality: string){
         const relationships = this.findNode('c:Relationships');
-        const relationshipNode = this.buildBasicNode('o:Relationship', `Relation ${sourceEntityId}-${targetEntityId}`);
+        const relationshipNode = this.buildBasicNode('o:Relationship',name);
 
         const relationId = relationshipNode.getAttribute('Id')!;
 

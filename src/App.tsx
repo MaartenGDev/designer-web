@@ -167,7 +167,11 @@ class App extends Component<IProps, IState> {
     };
 
     private handleRelationCreated = (sourceEntityId: string, targetEntityId: string) => {
-        this.CDMModel.createRelation(sourceEntityId, targetEntityId, '1,1');
+        const {model} = this.state
+        const sourceEntityName = (model.entities.find((x: IEntity) => x.id === sourceEntityId)! as IEntity).name;
+        const targetEntityName = (model.entities.find((x: IEntity) => x.id === targetEntityId)! as IEntity).name;
+
+        this.CDMModel.createRelation(sourceEntityId, targetEntityId, `${sourceEntityName}_OF_${targetEntityName}`, '1,1');
         this.handleModelSourceChange(this.CDMModel.getAsXml());
     };
 
