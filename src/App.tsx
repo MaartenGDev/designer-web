@@ -166,6 +166,11 @@ class App extends Component<IProps, IState> {
         this.handleModelSourceChange(this.CDMModel.getAsXml());
     };
 
+    private handleRelationCreated = (sourceEntityId: string, targetEntityId: string) => {
+        this.CDMModel.createRelation(sourceEntityId, targetEntityId, '1,1');
+        this.handleModelSourceChange(this.CDMModel.getAsXml());
+    };
+
     private getEditableDataForSelection = (model: IModel, selectedDataType: SelectedDataType, selectedId: string): IEntity | undefined => {
         if (selectedDataType === SelectedDataType.NONE) return undefined;
         if (selectedDataType === SelectedDataType.ENTITY) return model.entities.find(x => x.id === selectedId);
@@ -295,6 +300,7 @@ class App extends Component<IProps, IState> {
                                 onModelSelectionChange={this.handleModelSelectionChange}
                                 onEntityMoved={this.handleEntityMoved}
                                 onRelationClicked={relation => this.handleModelSelectionChange(SelectedDataType.RELATION, relation.id)}
+                                onRelationCreated={this.handleRelationCreated}
                                 scaling={scaling!}/>
                             : <p> no Data</p>
                         }

@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Connection, jsPlumb, OnConnectionBindInfo} from 'jsplumb';
+import {Connection, jsPlumb} from 'jsplumb';
 import Entity from "./Entity";
 import IEntity from "../../models/IEntity";
 import IModel from "../../models/IModel";
@@ -15,18 +15,12 @@ interface IProps {
     model: IModel,
     scaling: Scaling,
     onModelSelectionChange: (selectedDataType: SelectedDataType, selectedId: string | undefined) => void,
+    onRelationCreated: (sourceEntityId: string, targetEntityId: string) => void,
     onEntityMoved: (entityId: string, nextCoordinates: IRectangleCoordinates) => void
     onRelationClicked: (relation: IRelation) => void
 }
 
-interface IState {
-}
-
-const confirm = (data: any) => {
-    return true;
-};
-
-class Diagram extends Component<IProps, IState> {
+class Diagram extends Component<IProps> {
     private diagram: any;
 
     async componentDidMount() {
@@ -70,7 +64,7 @@ class Diagram extends Component<IProps, IState> {
     }
 
     loadDiagramWithData(props: IProps) {
-        const {model, scaling, onEntityMoved} = props
+        const {model, scaling, onEntityMoved, onRelationCreated} = props
 
         this.diagram.batch(() => {
             const connections: { [key: string]: {relationId: string, ref: string}[] } = model.relations.reduce((acc: { [key: string]: {relationId: string, ref: string}[] }, cur) => {
@@ -83,6 +77,7 @@ class Diagram extends Component<IProps, IState> {
             }, {});
 
             const entityElements = document.querySelectorAll('.editor .entity');
+            let pendingRelations: {[key: string]: boolean} = {};
 
             Object.keys(connections).forEach((sourceId: string) => {
                 if (connections.hasOwnProperty(sourceId)) {
@@ -99,9 +94,25 @@ class Diagram extends Component<IProps, IState> {
                             direction = matchIndex === 0 ? AnchorDirection.BOTTOM : (matchIndex === 1 ? AnchorDirection.TOP : AnchorDirection.FLOW)
                         }
 
-                        this.diagram.makeSource(sourceElem, {filter: '.connect-point', ...EndpointFactory.create(model, matchIndex)}, {anchor: EndpointFactory.getAnchorPoints(direction)});
-                        this.diagram.makeSource(targetElem, {filter: '.connect-point', ...EndpointFactory.create(model, matchIndex)}, {anchor: EndpointFactory.getAnchorPoints(direction)});
 
+                        const beforeDrop = (params: any) => {
+                            const sourceEntityId = (document.querySelector(`#${params.sourceId}`) as HTMLElement).dataset.customId!;
+                            const targetEntityId = (document.querySelector(`#${params.targetId}`) as HTMLElement).dataset.customId!;
+
+                            const relationKey = sourceEntityId + targetEntityId;
+
+                            if(pendingRelations.hasOwnProperty(relationKey)){
+                                return;
+                            }
+
+                            onRelationCreated(sourceEntityId, targetEntityId);
+                            pendingRelations[relationKey] = true;
+
+                            return false;
+                        };
+
+                        this.diagram.makeSource(sourceElem, {beforeDrop: beforeDrop, filter: '.connect-point', ...EndpointFactory.create(model, matchIndex, true)}, {anchor: EndpointFactory.getAnchorPoints(direction)});
+                        this.diagram.makeSource(targetElem, {beforeDrop: beforeDrop, filter: '.connect-point', ...EndpointFactory.create(model, matchIndex, true)}, {anchor: EndpointFactory.getAnchorPoints(direction)});
 
                         const conn = this.diagram.connect({
                             source: this.diagram.addEndpoint(sourceElem, EndpointFactory.create(model, matchIndex), {anchor: EndpointFactory.getAnchorPoints(direction)}),

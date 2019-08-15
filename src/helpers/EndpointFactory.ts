@@ -60,7 +60,7 @@ class EndpointFactory {
         return elem;
     }
 
-    static create(model: IModel, matchIndex: number): any {
+    static create(model: IModel, matchIndex: number, isPending: boolean = false): any {
         const lineColor = '#30364c';
         const connector = ['Bezier', {cssClass: 'connectorClass', hoverClass: 'connectorHoverClass', curviness: 100}]
         const connectorStyle = {
@@ -70,7 +70,7 @@ class EndpointFactory {
         const hoverStyle = {
             stroke: '#449999'
         };
-        const overlays = [
+        const overlays = isPending ? [] : [
             ['Custom', {
                 create: (component: any) => {
                     return this.buildCardinalityTag(component, model, matchIndex,true)

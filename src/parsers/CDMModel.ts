@@ -384,11 +384,24 @@ class CDMModel {
 
     setRefOfObjectInRelation(relationId: string, objectName: string, targetEntityId: string){
         const relationNode = this.findRelationById(relationId);
-        const fromEntityRefNode = this.findChildNode(this.findChildNode(relationNode, (node) => {
+
+        let refNode = this.findChildNode(relationNode, (node) => {
             return node.nodeName === objectName
-        }), (node) => {
+        });
+
+        if(refNode === undefined){
+            refNode = this.document.createElement(objectName);
+            relationNode.appendChild(refNode);
+        }
+
+        let fromEntityRefNode = this.findChildNode(refNode, (node) => {
             return node.nodeName === 'o:Entity';
         });
+
+        if(fromEntityRefNode === undefined){
+            fromEntityRefNode = this.document.createElement('o:Entity');
+            refNode.appendChild(fromEntityRefNode);
+        }
 
         fromEntityRefNode.setAttribute("Ref", targetEntityId);
 
@@ -409,6 +422,22 @@ class CDMModel {
 
     setToCardinalityOfRelation(relationId: string, nextCardinality: string){
         this.setAttributeForRelation(relationId, 'a:Entity2ToEntity1RoleCardinality', nextCardinality);
+    }
+
+    createRelation(sourceEntityId: string, targetEntityId: string, cardinality: string){
+        const relationships = this.findNode('c:Relationships');
+        const relationshipNode = this.buildBasicNode('o:Relationship', `Relation ${sourceEntityId}-${targetEntityId}`);
+
+        const relationId = relationshipNode.getAttribute('Id')!;
+
+        relationships.appendChild(relationshipNode);
+
+        this.setFromRefOfRelation(relationId, sourceEntityId);
+        this.setToRefOfRelation(relationId, targetEntityId);
+        this.setToCardinalityOfRelation(relationId, cardinality);
+        this.setFromCardinalityOfRelation(relationId, cardinality);
+
+        return relationshipNode;
     }
 
     deleteRelation(relationId: string){
