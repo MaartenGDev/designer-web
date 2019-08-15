@@ -14,12 +14,11 @@ Parses common diagram formats and displays the web-version.
 | Description               |  View  | Create | Update | Remove |
 | --------------------------| ------ |------  | ------ | ------ |
 | Entities                  | ✅     | ✅     |✅       | ❌     |
-| Relations                 | ✅     | ❌     |✅       | ❌     |
+| Relations                 | ✅     | ✅     |✅       | ✅     |
 | Domains                   | ✅     | ✅     |✅       | ✅     |
 
 
 ## Feature Requests
 | Description               | Priority      | Status             |
 | --------------------------| ------------- | -------------------|
-| Implement saving entities to persistent model | Should Have    |  not planned, ~1 week |
 | Implement scaling to diagram viewer   | Nice to have    |  not planned, ~1 week |
