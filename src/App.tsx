@@ -16,7 +16,6 @@ import SizingRenderer from "./components/diagram/SizingRenderer";
 import Diagram from "./components/diagram/Diagram";
 import {Scaling} from "./models/Scaling";
 import IRectangleCoordinates from "./models/IRectangleCoordinates";
-import {DIAGRAM} from './demo'
 import RelationEditor from "./components/editors/RelationEditor";
 import IRelation from "./models/IRelation";
 
@@ -46,11 +45,6 @@ class App extends Component<IProps, IState> {
         selectedId: undefined,
         selectedDataType: SelectedDataType.NONE
     };
-
-    componentDidMount(): void {
-        this.CDMModel.loadFromXml(DIAGRAM);
-        this.handleModelSourceChange(DIAGRAM);
-    }
 
     handleModelSourceChange = (xml: string) => {
         xmlParser(xml, (data: IModel) => {
@@ -167,7 +161,7 @@ class App extends Component<IProps, IState> {
     };
 
     private handleRelationCreated = (sourceEntityId: string, targetEntityId: string) => {
-        const {model} = this.state
+        const {model} = this.state;
         const sourceEntityName = (model.entities.find((x: IEntity) => x.id === sourceEntityId)! as IEntity).name;
         const targetEntityName = (model.entities.find((x: IEntity) => x.id === targetEntityId)! as IEntity).name;
 
@@ -183,7 +177,7 @@ class App extends Component<IProps, IState> {
     };
 
     private downloadModel = () => {
-        const data = this.CDMModel.getAsXml();
+        const data = (this.CDMModel.getAsXml());
 
         DownloadHelper.downloadAsFile('model.cdm', data)
     };
