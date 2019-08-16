@@ -3,7 +3,7 @@ import uid from 'uuid/v4';
 import {DataTypeHelper} from "../helpers/DataTypeHelper";
 import IRectangleCoordinates from "../models/IRectangleCoordinates";
 
-class CDMModel {
+class DataModel {
     private document: Document = new Document();
 
     private documentPrefix = `<?xml version="1.0" encoding="UTF-8"?>
@@ -337,6 +337,15 @@ class CDMModel {
 
         relatedRelationIds.forEach(relationId => this.deleteRelation(relationId));
 
+        const symbols = this.findNode('c:ConceptualDiagrams.o:ConceptualDiagram.c:Symbols');
+        const entitySymbol = this.findEntitySymbolByEntityId(entityId);
+        const noteSymbol = this.findNoteLinkSymbolByEntityId(entitySymbol.getAttribute('Id')!);
+
+        symbols.removeChild(entitySymbol);
+        if(noteSymbol !== undefined){
+            symbols.removeChild(noteSymbol);
+        }
+
         entities.removeChild(entity);
     }
 
@@ -350,9 +359,33 @@ class CDMModel {
         return this.findNodeById(domainsNode, 'o:Domain', id);
     }
 
+    private findNoteLinkSymbolByEntityId(entityId: string) {
+        return this.findSymbolByObjectId('o:NoteLinkSymbol', 'o:EntitySymbol', entityId, 'c:SourceSymbol');
+    }
+
+    private findEntitySymbolByEntityId(entityId: string) {
+        return this.findSymbolByObjectId('o:EntitySymbol', 'o:Entity', entityId);
+    }
+
+    private findRelationSymbolByEntityId(relationId: string) {
+        return this.findSymbolByObjectId('o:RelationshipSymbol', 'o:Relationship', relationId);
+    }
+
+
+    private findSymbolByObjectId(symbolName: string, refObjectName: string, refId: string, objectName: string = 'c:Object') {
+        return this.findChildNode(this.findNode('c:ConceptualDiagrams.o:ConceptualDiagram.c:Symbols'), (node) => {
+            if(node.nodeName !== symbolName) return false;
+
+            const objectRefNode = this.findChildNode(node, node => node.nodeName === objectName);
+            const entityNode = this.findChildNode(objectRefNode, node => node.nodeName === refObjectName);
+
+            return (entityNode as Element).getAttribute('Ref')! === refId
+        });
+    }
+
+
     private findRelationById(id: string) {
         return this.findNodeById(this.findNode('c:Relationships'), 'o:Relationship', id);
-
     }
 
     setDataTypeAndLengthForDomain(domainId: string, name: string, dataType: string, length: number) {
@@ -480,6 +513,11 @@ class CDMModel {
         const relationships = this.findNode('c:Relationships');
         const relationship = this.findNodeById(relationships, 'o:Relationship', relationId);
 
+        const symbols = this.findNode('c:ConceptualDiagrams.o:ConceptualDiagram.c:Symbols');
+        const symbol = this.findRelationSymbolByEntityId(relationId);
+
+        symbols.removeChild(symbol);
+
         relationships.removeChild(relationship);
     }
 
@@ -541,4 +579,4 @@ class CDMModel {
     }
 }
 
-export default CDMModel;
+export default DataModel;

@@ -1,8 +1,8 @@
-import CDMModel from "./CDMModel";
+import DataModel from "./DataModel";
 
 it('updates the attribute and cardinality of relation correctly', () => {
     // Arrange
-    const model = new CDMModel();
+    const model = new DataModel();
     const relationShipId = "o3";
 
     const newName = 'Hello World';
@@ -69,7 +69,7 @@ it('updates the attribute and cardinality of relation correctly', () => {
 
 it('updates the attributes of entity correctly', () => {
     // Arrange
-    const model = new CDMModel();
+    const model = new DataModel();
     const defaultUid = 'aaa-bbb';
     model.getUid = () => defaultUid;
 

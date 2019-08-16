@@ -5,7 +5,7 @@ import IModel from "./models/IModel";
 import {SelectedDataType} from "./models/SelectedDataType";
 import EntityEditor from "./components/editors/EntityEditor";
 import {MdClose} from 'react-icons/md'
-import CDMModel from "./parsers/CDMModel";
+import DataModel from "./parsers/DataModel";
 import IEntity from "./models/IEntity";
 import {DownloadHelper} from "./helpers/DownloadHelper";
 import {EntityIdentifierChangeAction} from "./models/EntityIdentifierChangeAction";
@@ -31,7 +31,7 @@ interface IState {
 }
 
 class App extends Component<IProps, IState> {
-    private CDMModel = new CDMModel();
+    private CDMModel = new DataModel();
 
     state = {
         modelXml: '',
