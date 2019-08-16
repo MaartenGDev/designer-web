@@ -177,7 +177,7 @@ class App extends Component<IProps, IState> {
     };
 
     private downloadModel = () => {
-        const data = (this.CDMModel.getAsXml());
+        const data = this.CDMModel.getAsXml();
 
         DownloadHelper.downloadAsFile('model.cdm', data)
     };

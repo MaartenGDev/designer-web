@@ -119,8 +119,8 @@ const getAsJson = (model: any): IModel => {
                             : undefined;
 
                         return dataItemId !== undefined
-                            ? {dataItemId, ...dataItems[dataItemId]}
-                            : {dataItemId, ...getAsAttribute(attribute)}
+                            ? {...dataItems[dataItemId], dataItemId}
+                            : {...getAsAttribute(attribute), dataItemId}
                     })
                     : [],
                 identifiers: entity.hasOwnProperty('c:Identifiers')
