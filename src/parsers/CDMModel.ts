@@ -322,6 +322,24 @@ class CDMModel {
         return entity;
     }
 
+    public deleteEntity(entityId: string){
+        const entities = this.findNode('c:Entities');
+        const entity = this.findEntity(entityId);
+
+        const relatedRelationIds = (Array.from(this.findNode('c:Relationships').childNodes).filter(node => {
+            if(node.nodeName !== 'o:Relationship') return false;
+
+            const fromRef = this.getRefOfObjectInRelation((node as HTMLElement).getAttribute('Id')!, 'c:Object1');
+            const toRef = this.getRefOfObjectInRelation((node as HTMLElement).getAttribute('Id')!, 'c:Object2');
+
+            return fromRef === entityId || toRef === entityId;
+        }) as Element[]).map(x => x.getAttribute('Id')!);
+
+        relatedRelationIds.forEach(relationId => this.deleteRelation(relationId));
+
+        entities.removeChild(entity);
+    }
+
     private findNodeById(parentNode: Node, type: string, id: string) {
         return this.findChildNode(parentNode, (node) => {
             return node.nodeName === type && (node as Element).getAttribute('Id') === id
@@ -386,6 +404,18 @@ class CDMModel {
         });
 
         return relation;
+    }
+
+
+    getRefOfObjectInRelation(relationId: string, objectName: string): string{
+        const relationNode = this.findRelationById(relationId);
+        const fromEntityRefNode = this.findChildNode(this.findChildNode(relationNode, (node) => {
+            return node.nodeName === objectName
+        }), (node) => {
+            return node.nodeName === 'o:Entity';
+        });
+
+        return fromEntityRefNode.getAttribute("Ref")!;
     }
 
     setRefOfObjectInRelation(relationId: string, objectName: string, targetEntityId: string){

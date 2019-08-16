@@ -9,6 +9,8 @@ import IAttribute from "../../models/IAttribute";
 interface IProps {
     entity: IEntity,
     model: IModel,
+    onDismiss: () => void
+    onEntityDelete: (entityId: string) => void
     onEntityChange: (entityId: string, attributeName: string, value: any) => void
     onEntityAttributeDomainChange: (entityId: string, attributeId: string, dataItemId: string, nextDomainId: string) => void
     onEntityAttributeChange: (entityId: string, attributeId: string, dataItemId: string, nextDataType: string, nextDataTypeLength: number) => void
@@ -74,7 +76,7 @@ class EntityEditor extends Component<IProps, IState> {
     }
 
     render() {
-        const {entity, model, onEntityChange, onEntityAttributeDomainChange, onEntityIdentifierChange, onEntityAttributeChange, onEntityAttributeCreation, onEntityAttributeRemoval} = this.props;
+        const {entity, model, onEntityChange, onEntityAttributeDomainChange, onEntityIdentifierChange, onEntityAttributeChange, onEntityAttributeCreation, onEntityAttributeRemoval, onEntityDelete, onDismiss} = this.props;
         const dataTypeSourceByAttributeId: { [key: string]: DataTypeSourceType } = this.state.dataTypeSourceByAttributeId;
 
         const domainOptions = Object.values(model.domains).map(domain => ({
@@ -178,6 +180,19 @@ class EntityEditor extends Component<IProps, IState> {
                         })}
                         </tbody>
                     </table>
+                    <div className='flex mt-4'>
+                        <span
+                            className="form__label form__label--danger form__label--inline px-4 py-3 cursor-pointer rounded-sm"
+                            onClick={e => onEntityDelete(entity.id)}>
+                            REMOVE
+                        </span>
+
+                        <span
+                            className="form__label form__label--gray ml-2 flex-1 form__label--inline px-4 py-3 cursor-pointer rounded-sm"
+                            onClick={e => onDismiss()}>
+                            DISMISS
+                        </span>
+                    </div>
                 </div>
             </div>
         )

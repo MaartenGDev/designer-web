@@ -9,6 +9,18 @@
     &--red{
       @apply .text-red;
     }
+
+    &--danger{
+      @apply .bg-red .text-white;
+    }
+
+    &--gray{
+      @apply .bg-grey-light .text-grey-dark;
+    }
+
+    &--inline{
+      display: inline-block;
+    }
   }
 
   &__input{

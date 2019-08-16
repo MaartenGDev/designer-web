@@ -5,6 +5,7 @@ import IRelation from "../../models/IRelation";
 interface IProps {
     relation: IRelation,
     model: IModel,
+    onDismiss: () => void
     onRelationDelete: (relationId: string) => void
     onRelationChange: (relationId: string, attributeName: string, value: any) => void
     onRelationFromRefChange: (relationId: string, targetEntityId: string) => void
@@ -24,20 +25,16 @@ export default class RelationEditor extends Component<IProps, IState> {
     cardinalityOptions = ['0,1', '0,n', '1,1', '1,n'];
 
     render() {
-        const {relation, model, onRelationChange, onRelationFromRefChange, onRelationToRefChange, onRelationFromCardinalityChange, onRelationToCardinalityChange, onRelationDelete} = this.props;
+        const {relation, model, onRelationChange, onRelationFromRefChange, onRelationToRefChange, onRelationFromCardinalityChange, onRelationToCardinalityChange, onRelationDelete, onDismiss} = this.props;
 
         return (
             <div>
                 <div>
-                    <div className='flex'>
+                    <div className='flex justify-between'>
 
                         <label className="form__label" htmlFor="form-input-name">
                             Name
                         </label>
-                        <span className="form__label form__label--red ml-2 cursor-pointer inline-block"
-                              onClick={e => onRelationDelete(relation.id)}>
-                            REMOVE
-                        </span>
                     </div>
                     <input
                         className="form__input focus:outline-none focus:bg-white focus:border-grey text-sm"
@@ -90,6 +87,20 @@ export default class RelationEditor extends Component<IProps, IState> {
                         </tr>
                         </tbody>
                     </table>
+
+                    <div className='flex mt-4'>
+                        <span
+                            className="form__label form__label--danger form__label--inline px-4 py-3 cursor-pointer rounded-sm"
+                            onClick={e => onRelationDelete(relation.id)}>
+                            REMOVE
+                        </span>
+
+                        <span
+                            className="form__label form__label--gray ml-2 flex-1 form__label--inline px-4 py-3 cursor-pointer rounded-sm"
+                            onClick={e => onDismiss()}>
+                            DISMISS
+                        </span>
+                    </div>
                 </div>
             </div>
         )

@@ -13,7 +13,7 @@ Parses common diagram formats and displays the web-version.
 ## Features
 | Description               |  View  | Create | Update | Remove |
 | --------------------------| ------ |------  | ------ | ------ |
-| Entities                  | ✅     | ✅     |✅       | ❌     |
+| Entities                  | ✅     | ✅     |✅       | ✅     |
 | Relations                 | ✅     | ✅     |✅       | ✅     |
 | Domains                   | ✅     | ✅     |✅       | ✅     |
 

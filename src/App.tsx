@@ -84,7 +84,6 @@ class App extends Component<IProps, IState> {
 
     private handleEntityAttributeRemoval = (entityId: string, attributeId: string) => {
         this.CDMModel.removeAttributeForEntity(entityId, attributeId);
-
         this.handleModelSourceChange(this.CDMModel.getAsXml());
     };
 
@@ -102,6 +101,12 @@ class App extends Component<IProps, IState> {
             this.CDMModel.addIdentifierForEntity(entityId, attributeId, changeAction === EntityIdentifierChangeAction.PRIMARY);
         }
 
+        this.handleModelSourceChange(this.CDMModel.getAsXml());
+    };
+
+    private handleEntityDelete = (entityId: string) => {
+        this.CDMModel.deleteEntity(entityId);
+        this.handleModelSelectionChange(SelectedDataType.NONE, undefined);
         this.handleModelSourceChange(this.CDMModel.getAsXml());
     };
 
@@ -225,6 +230,8 @@ class App extends Component<IProps, IState> {
                             onEntityIdentifierChange={this.handleEntityIdentifierChange}
                             onEntityAttributeCreation={this.handleEntityAttributeCreation}
                             onEntityAttributeRemoval={this.handleEntityAttributeRemoval}
+                            onEntityDelete={this.handleEntityDelete}
+                            onDismiss={() => this.handleModelSelectionChange(SelectedDataType.NONE, undefined)}
                         />}
 
                         {selectedDataType === SelectedDataType.DOMAINS &&
@@ -246,6 +253,7 @@ class App extends Component<IProps, IState> {
                             onRelationFromCardinalityChange={this.handleRelationFromCardinalityChange}
                             onRelationToRefChange={this.handleRelationToRefChange}
                             onRelationToCardinalityChange={this.handleRelationToCardinalityChange}
+                            onDismiss={() => this.handleModelSelectionChange(SelectedDataType.NONE, undefined)}
                         />}
                     </div>
                 </div>}

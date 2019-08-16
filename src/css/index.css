@@ -6135,6 +6135,20 @@ table {
       color: #e3342f;
     }
 
+.form__label--danger {
+      background-color: #e3342f;
+      color: #fff;
+    }
+
+.form__label--gray {
+      background-color: #dae1e7;
+      color: #8795a1;
+    }
+
+.form__label--inline {
+      display: inline-block;
+    }
+
 .form__input {
     appearance: none;
     display: block;
