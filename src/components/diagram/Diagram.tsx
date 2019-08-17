@@ -131,11 +131,20 @@ class Diagram extends Component<IProps> {
 
             this.diagram.draggable(entityElements, {
                 start: function(e: any){
+                    e.el.classList.add('has-recently-been-dragged');
                     startTop = parseInt(e.el.style.top);
                     startLeft = parseInt(e.el.style.left);
-
+                },
+                drag:function(e: any){
+                    e.e.stopImmediatePropagation();
+                    e.e.stopPropagation();
                 },
                 stop: function(e: any){
+                    // Hack because we have to wait on the click to fire
+                    setTimeout(() => {
+                        e.el.classList.remove('has-recently-been-dragged');
+                    }, 200);
+
                     finalTop = parseInt(e.el.style.top);
                     finalLeft = parseInt(e.el.style.left);
 

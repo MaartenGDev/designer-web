@@ -32,10 +32,7 @@ const Entity = ({className, entity, model, onModelSelectionChange, position}: IP
              }} onClick={e => {
 
             e.stopPropagation();
-
-            if ((e.currentTarget as Element).classList.contains('jtk-dragged')) {
-                (e.currentTarget as Element).classList.remove('jtk-dragged')
-            } else {
+            if (!(e.currentTarget as Element).classList.contains('has-recently-been-dragged')) {
                 onModelSelectionChange(SelectedDataType.ENTITY, entity.id)
             }
         }}>
