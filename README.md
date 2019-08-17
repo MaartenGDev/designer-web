@@ -3,9 +3,9 @@ Parses common diagram formats and displays the web-version.
 
 ## Demo
 [Try it online](https://cdm.maartendev.me)
-##### Landing
+### Landing
 ![Overview](./docs/landing.png)
-##### Editor
+### Editor
 ![Entity Attribute](./docs/editor.png)
 
 
