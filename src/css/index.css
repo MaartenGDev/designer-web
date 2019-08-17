@@ -6198,6 +6198,33 @@ table {
     opacity: 0;
   }
 
+.btn {
+  padding-top: .75rem;
+  padding-bottom: .75rem;
+  border-radius: .25rem;
+  text-transform: uppercase;
+  font-size: 1rem;
+  padding-left: .5rem;
+  padding-right: .5rem;
+  color: #fff;
+  display: inline-block;
+  text-align: center;
+  box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, .2), 0px 2px 2px 0px rgba(0, 0, 0, .14), 0px 1px 5px 0px rgba(0, 0, 0, .12);
+}
+
+.btn--purple {
+    color: #fff;
+    background-color: #6574cd;
+  }
+
+.btn--teal {
+    background-color: #8795a1;
+  }
+
+.btn--red {
+    background-color: #ef5753;
+  }
+
 .jtk-connector {
   z-index: 4;
 }

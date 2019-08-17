@@ -18,8 +18,16 @@ import {Scaling} from "./models/Scaling";
 import IRectangleCoordinates from "./models/IRectangleCoordinates";
 import RelationEditor from "./components/editors/RelationEditor";
 import IRelation from "./models/IRelation";
+import {DEMO_MODEL_XML} from "./data/demo";
+import {EMPTY_MODEL_XML} from "./data/emptyModel";
+import {MdLayers, MdLocalOffer, MdLabel} from 'react-icons/md'
 
 interface IProps {
+    modelFile?: File;
+    importModelFromFile: boolean;
+    loadDemo: boolean;
+    createNewModel: boolean;
+    navigateToHome: () => void
 }
 
 interface IState {
@@ -31,7 +39,7 @@ interface IState {
 }
 
 export class DataModelEditor extends Component<IProps, IState> {
-    private CDMModel = new DataModel();
+    private dataModel = new DataModel();
 
     state = {
         modelXml: '',
@@ -45,6 +53,32 @@ export class DataModelEditor extends Component<IProps, IState> {
         selectedId: undefined,
         selectedDataType: SelectedDataType.NONE
     };
+
+    componentDidMount(): void {
+        const {modelFile, importModelFromFile, loadDemo, createNewModel} = this.props;
+
+        if (importModelFromFile) {
+            this.importFromFile(modelFile!);
+        }
+
+        if (loadDemo) {
+            this.loadDemo();
+        }
+
+        if (createNewModel) {
+            this.loadNewModel();
+        }
+    }
+
+    loadDemo() {
+        this.dataModel.loadFromXml(DEMO_MODEL_XML);
+        this.handleModelSourceChange(DEMO_MODEL_XML);
+    }
+
+    loadNewModel() {
+        this.dataModel.loadFromXml(EMPTY_MODEL_XML);
+        this.handleModelSourceChange(EMPTY_MODEL_XML);
+    }
 
     handleModelSourceChange = (xml: string) => {
         xmlParser(xml, (data: IModel) => {
@@ -63,106 +97,106 @@ export class DataModelEditor extends Component<IProps, IState> {
     };
 
     private createEntity = (name: string) => {
-        this.CDMModel.createEntity(name);
-        this.handleModelSourceChange(this.CDMModel.getAsXml());
+        this.dataModel.createEntity(name);
+        this.handleModelSourceChange(this.dataModel.getAsXml());
     };
 
     private handleEntityChange = (entityId: string, attributeName: string, value: any) => {
-        this.CDMModel.setAttributeForEntity(entityId, attributeName, value);
-        this.handleModelSourceChange(this.CDMModel.getAsXml());
+        this.dataModel.setAttributeForEntity(entityId, attributeName, value);
+        this.handleModelSourceChange(this.dataModel.getAsXml());
     };
 
     private handleEntityAttributeChange = (entityId: string, attributeId: string, dataItemId: string, nextDataType: string, nextDataTypeLength: number) => {
-        this.CDMModel.setDataTypeAndLengthForDataItem(dataItemId, nextDataType, nextDataTypeLength);
-        this.handleModelSourceChange(this.CDMModel.getAsXml());
+        this.dataModel.setDataTypeAndLengthForDataItem(dataItemId, nextDataType, nextDataTypeLength);
+        this.handleModelSourceChange(this.dataModel.getAsXml());
     };
 
     private handleEntityAttributeCreation = (entityId: string, name: string, dataType: string, length: number) => {
-        this.CDMModel.createAttributeForEntity(entityId, name, dataType, length);
-        this.handleModelSourceChange(this.CDMModel.getAsXml());
+        this.dataModel.createAttributeForEntity(entityId, name, dataType, length);
+        this.handleModelSourceChange(this.dataModel.getAsXml());
     };
 
     private handleEntityAttributeRemoval = (entityId: string, attributeId: string) => {
-        this.CDMModel.removeAttributeForEntity(entityId, attributeId);
-        this.handleModelSourceChange(this.CDMModel.getAsXml());
+        this.dataModel.removeAttributeForEntity(entityId, attributeId);
+        this.handleModelSourceChange(this.dataModel.getAsXml());
     };
 
     private handleEntityAttributeDomainChange = (entityId: string, attributeId: string, dataItemId: string, nextDomainId: string) => {
-        this.CDMModel.setDomainForDataItem(dataItemId, nextDomainId);
-        this.handleModelSourceChange(this.CDMModel.getAsXml());
+        this.dataModel.setDomainForDataItem(dataItemId, nextDomainId);
+        this.handleModelSourceChange(this.dataModel.getAsXml());
     };
 
     private handleEntityIdentifierChange = (entityId: string, changeAction: EntityIdentifierChangeAction, attributeId: string) => {
         if (changeAction === EntityIdentifierChangeAction.NONE) {
-            this.CDMModel.removeIdentifierForEntity(entityId, attributeId);
+            this.dataModel.removeIdentifierForEntity(entityId, attributeId);
         }
 
         if (changeAction === EntityIdentifierChangeAction.REGULAR || changeAction === EntityIdentifierChangeAction.PRIMARY) {
-            this.CDMModel.addIdentifierForEntity(entityId, attributeId, changeAction === EntityIdentifierChangeAction.PRIMARY);
+            this.dataModel.addIdentifierForEntity(entityId, attributeId, changeAction === EntityIdentifierChangeAction.PRIMARY);
         }
 
-        this.handleModelSourceChange(this.CDMModel.getAsXml());
+        this.handleModelSourceChange(this.dataModel.getAsXml());
     };
 
     private handleEntityDelete = (entityId: string) => {
-        this.CDMModel.deleteEntity(entityId);
+        this.dataModel.deleteEntity(entityId);
         this.handleModelSelectionChange(SelectedDataType.NONE, undefined);
-        this.handleModelSourceChange(this.CDMModel.getAsXml());
+        this.handleModelSourceChange(this.dataModel.getAsXml());
     };
 
     private handleDomainChange = (domainId: string, name: string, dataType: string, length: number) => {
-        this.CDMModel.setDataTypeAndLengthForDomain(domainId, name, dataType, length);
-        this.handleModelSourceChange(this.CDMModel.getAsXml());
+        this.dataModel.setDataTypeAndLengthForDomain(domainId, name, dataType, length);
+        this.handleModelSourceChange(this.dataModel.getAsXml());
     };
 
     private handleDomainRemoval = (domainId: string) => {
-        if (this.CDMModel.removeDomain(domainId)) {
-            return this.handleModelSourceChange(this.CDMModel.getAsXml());
+        if (this.dataModel.removeDomain(domainId)) {
+            return this.handleModelSourceChange(this.dataModel.getAsXml());
         }
 
         toast.error('Failed to delete domain, there are entities using this domain.');
     };
 
     private handleDomainCreation = (name: string, dataType: string, length: number) => {
-        this.CDMModel.createDomain(name, dataType, length);
-        this.handleModelSourceChange(this.CDMModel.getAsXml());
+        this.dataModel.createDomain(name, dataType, length);
+        this.handleModelSourceChange(this.dataModel.getAsXml());
     };
 
     private handleEntityMoved = (entityId: string, nextCoordinates: IRectangleCoordinates) => {
-        this.CDMModel.moveEntity(entityId, nextCoordinates);
-        this.handleModelSourceChange(this.CDMModel.getAsXml());
+        this.dataModel.moveEntity(entityId, nextCoordinates);
+        this.handleModelSourceChange(this.dataModel.getAsXml());
     };
 
 
     private handleRelationChange = (relationId: string, attributeName: string, value: any) => {
-        this.CDMModel.setAttributeForRelation(relationId, attributeName, value);
-        this.handleModelSourceChange(this.CDMModel.getAsXml());
+        this.dataModel.setAttributeForRelation(relationId, attributeName, value);
+        this.handleModelSourceChange(this.dataModel.getAsXml());
     };
 
     private handleRelationFromRefChange = (relationId: string, targetEntityId: string) => {
-        this.CDMModel.setFromRefOfRelation(relationId, targetEntityId);
-        this.handleModelSourceChange(this.CDMModel.getAsXml());
+        this.dataModel.setFromRefOfRelation(relationId, targetEntityId);
+        this.handleModelSourceChange(this.dataModel.getAsXml());
     };
 
     private handleRelationToRefChange = (relationId: string, targetEntityId: string) => {
-        this.CDMModel.setToRefOfRelation(relationId, targetEntityId);
-        this.handleModelSourceChange(this.CDMModel.getAsXml());
+        this.dataModel.setToRefOfRelation(relationId, targetEntityId);
+        this.handleModelSourceChange(this.dataModel.getAsXml());
     };
 
     private handleRelationFromCardinalityChange = (relationId: string, nextCardinality: string) => {
-        this.CDMModel.setFromCardinalityOfRelation(relationId, nextCardinality);
-        this.handleModelSourceChange(this.CDMModel.getAsXml());
+        this.dataModel.setFromCardinalityOfRelation(relationId, nextCardinality);
+        this.handleModelSourceChange(this.dataModel.getAsXml());
     };
 
     private handleRelationToCardinalityChange = (relationId: string, nextCardinality: string) => {
-        this.CDMModel.setToCardinalityOfRelation(relationId, nextCardinality);
-        this.handleModelSourceChange(this.CDMModel.getAsXml());
+        this.dataModel.setToCardinalityOfRelation(relationId, nextCardinality);
+        this.handleModelSourceChange(this.dataModel.getAsXml());
     };
 
     private handleRelationDelete = (relationId: string) => {
-        this.CDMModel.deleteRelation(relationId);
+        this.dataModel.deleteRelation(relationId);
         this.handleModelSelectionChange(SelectedDataType.NONE, undefined);
-        this.handleModelSourceChange(this.CDMModel.getAsXml());
+        this.handleModelSourceChange(this.dataModel.getAsXml());
     };
 
     private handleRelationCreated = (sourceEntityId: string, targetEntityId: string) => {
@@ -170,8 +204,8 @@ export class DataModelEditor extends Component<IProps, IState> {
         const sourceEntityName = (model.entities.find((x: IEntity) => x.id === sourceEntityId)! as IEntity).name;
         const targetEntityName = (model.entities.find((x: IEntity) => x.id === targetEntityId)! as IEntity).name;
 
-        this.CDMModel.createRelation(sourceEntityId, targetEntityId, `${sourceEntityName}_OF_${targetEntityName}`, '1,1');
-        this.handleModelSourceChange(this.CDMModel.getAsXml());
+        this.dataModel.createRelation(sourceEntityId, targetEntityId, `${sourceEntityName}_OF_${targetEntityName}`, '1,1');
+        this.handleModelSourceChange(this.dataModel.getAsXml());
     };
 
     private getEditableDataForSelection = (model: IModel, selectedDataType: SelectedDataType, selectedId: string): IEntity | undefined => {
@@ -182,28 +216,28 @@ export class DataModelEditor extends Component<IProps, IState> {
     };
 
     private downloadModel = () => {
-        const data = this.CDMModel.getAsXml();
+        const data = this.dataModel.getAsXml();
 
         DownloadHelper.downloadAsFile('model.cdm', data)
     };
 
-    private handleModelImport = (e: { target: HTMLInputElement }) => {
-        if (e.target.files === null || e.target.files.length === 0) return;
+    private importFromFile = (file: File) => {
         const reader = new FileReader();
 
         reader.onload = () => {
             if (reader.result === null) return;
             const result = reader.result.toString();
 
-            this.CDMModel.loadFromXml(result);
+            this.dataModel.loadFromXml(result);
             this.handleModelSourceChange(result);
         };
 
-        reader.readAsText(e.target.files[0])
+        reader.readAsText(file)
     };
 
     render() {
         const {model, selectedDataType, selectedId, scaling} = this.state;
+        const {navigateToHome} = this.props
         const hasLoadedModel = model.entities.length > 0;
 
         return (
@@ -260,32 +294,44 @@ export class DataModelEditor extends Component<IProps, IState> {
 
                 <div
                     style={{backgroundColor: '#f7f7f7'}}
-                    className="flex flex-col flex-grow items-stretch min-h-screen"
+                    className="flex flex-grow items-stretch min-h-screen"
                 >
-                    <div className="py-6 border-b border-grey-lighter pl-6 bg-white pr-6 relative">
-                        <div className='flex justify-between items-center'>
-                            <div className='flex items-center'>
-                                {hasLoadedModel && <span
-                                    className="uppercase text-grey-darker font-bold cursor-pointer mr-6 inline-block cursor-pointer ml-12"
-                                    onClick={_ => this.handleModelSelectionChange(SelectedDataType.DOMAINS)}>DOMAINS</span>}
-
-                                {hasLoadedModel && <span
-                                    className="uppercase text-grey-darker font-bold cursor-pointer mr-6 inline-block cursor-pointer ml-12"
-                                    onClick={_ => this.createEntity('entity_1')}>ADD ENTITY</span>}
-                            </div>
-                            <div className='flex items-center'>
-                                {hasLoadedModel && <span
-                                    className="uppercase text-grey-darker font-bold cursor-pointer mr-6 inline-block cursor-pointer"
-                                    onClick={this.downloadModel}>Export</span>}
-
-                                <div className="upload-btn-wrapper cursor-pointer">
-                    <span
-                        className="uppercase text-grey-darker font-bold cursor-pointer upload-btn-wrapper__label">Import Model</span>
-                                    <input type="file" className='upload-btn-wrapper__input' accept=".cdm,.pdm"
-                                           onChange={this.handleModelImport}/>
-                                </div>
-
-                            </div>
+                    <div className="border-b border-grey-lighter bg-white relative">
+                        <div className='py-6 border-b border-grey-light px-6'>
+                            <span className='text-2xl font-bold'>Editor</span>
+                        </div>
+                        <div className='mt-6 px-6'>
+                            <span
+                                className='block uppercase tracking-wide text-grey-darker text-xs font-bold mb-2'>Data</span>
+                            <ul className='m-0 mt-2 list-reset text-grey-dark'>
+                                <li className='text-md mb-2 cursor-pointer'>
+                                        <span className='no-underline flex items-center'
+                                              onClick={_ => this.handleModelSelectionChange(SelectedDataType.DOMAINS)}>
+                                            <MdLocalOffer/>
+                                            <span className='ml-2'>Domains</span>
+                                        </span>
+                                </li>
+                                <li className='text-md mb-2 cursor-pointer'>
+                                        <span className='no-underline flex items-center'
+                                              onClick={_ => this.createEntity('entity_1')}>
+                                            <MdLayers/>
+                                            <span className='ml-2'>Add entity</span>
+                                        </span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div className='mt-6 px-6'>
+                            <span
+                                className='block uppercase tracking-wide text-grey-darker text-xs font-bold mb-2'>Navigation</span>
+                            <ul className='m-0 mt-2 list-reset text-grey-dark'>
+                                <li className='text-md mb-2 cursor-pointer'>
+                                        <span className='no-underline flex items-center'
+                                              onClick={navigateToHome}>
+                                            <MdLabel/>
+                                            <span className='ml-2'>Back to home</span>
+                                        </span>
+                                </li>
+                            </ul>
                         </div>
                     </div>
 
@@ -306,7 +352,7 @@ export class DataModelEditor extends Component<IProps, IState> {
                                 onRelationClicked={relation => this.handleModelSelectionChange(SelectedDataType.RELATION, relation.id)}
                                 onRelationCreated={this.handleRelationCreated}
                                 scaling={scaling!}/>
-                            : <p> no Data</p>
+                            : null
                         }
                     </div>
                 </div>
