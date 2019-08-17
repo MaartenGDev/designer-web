@@ -297,8 +297,8 @@ export class DataModelEditor extends Component<IProps, IState> {
                     className="flex flex-grow items-stretch min-h-screen"
                 >
                     <div className="border-b border-grey-lighter bg-white relative">
-                        <div className='py-6 border-b border-grey-light px-6'>
-                            <span className='text-2xl font-bold'>Editor</span>
+                        <div className='py-4 px-6 border-b border-grey-light'>
+                            <span className='text-xl font-bold m-0 text-grey-darker'>Editor</span>
                         </div>
                         <div className='mt-6 px-6'>
                             <span
