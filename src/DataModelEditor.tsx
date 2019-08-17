@@ -4,7 +4,6 @@ import xmlParser from './parsers/modelParser';
 import IModel from "./models/IModel";
 import {SelectedDataType} from "./models/SelectedDataType";
 import EntityEditor from "./components/editors/EntityEditor";
-import {MdClose} from 'react-icons/md'
 import DataModel from "./parsers/DataModel";
 import IEntity from "./models/IEntity";
 import {DownloadHelper} from "./helpers/DownloadHelper";
@@ -20,7 +19,7 @@ import RelationEditor from "./components/editors/RelationEditor";
 import IRelation from "./models/IRelation";
 import {DEMO_MODEL_XML} from "./data/demo";
 import {EMPTY_MODEL_XML} from "./data/emptyModel";
-import {MdLayers, MdLocalOffer, MdLabel} from 'react-icons/md'
+import {MdLayers, MdLocalOffer, MdLabel, MdClose, MdMenu} from 'react-icons/md'
 
 interface IProps {
     modelFile?: File;
@@ -35,6 +34,7 @@ interface IState {
     model: IModel,
     selectedId: string | undefined,
     scaling: Scaling | undefined,
+    menuIsCollapsed: boolean,
     selectedDataType: SelectedDataType
 }
 
@@ -49,6 +49,7 @@ export class DataModelEditor extends Component<IProps, IState> {
             relations: [],
             domains: {}
         },
+        menuIsCollapsed: false,
         scaling: undefined,
         selectedId: undefined,
         selectedDataType: SelectedDataType.NONE
@@ -236,7 +237,7 @@ export class DataModelEditor extends Component<IProps, IState> {
     };
 
     render() {
-        const {model, selectedDataType, selectedId, scaling} = this.state;
+        const {model, selectedDataType, selectedId, scaling, menuIsCollapsed} = this.state;
         const {navigateToHome} = this.props
         const hasLoadedModel = model.entities.length > 0;
 
@@ -297,42 +298,46 @@ export class DataModelEditor extends Component<IProps, IState> {
                     className="flex flex-grow items-stretch min-h-screen"
                 >
                     <div className="border-b border-grey-lighter bg-white relative">
-                        <div className='py-4 px-6 border-b border-grey-light'>
-                            <span className='text-xl font-bold m-0 text-grey-darker'>Editor</span>
+                        <div className='py-4 px-6 border-b border-grey-light flex justify-between items-center'>
+                            {!menuIsCollapsed && <span className='text-xl font-bold m-0 text-grey-darker'>Editor</span>}
+                            {!menuIsCollapsed && <MdClose className='text-xl text-grey-darker' onClick={x => this.setState({menuIsCollapsed: true})}/>}
+                            {menuIsCollapsed && <MdMenu className='text-xl text-grey-darker' onClick={x => this.setState({menuIsCollapsed: false})}/>}
                         </div>
-                        <div className='mt-6 px-6'>
+                        {!menuIsCollapsed && <div>
+                            <div className='mt-6 px-6'>
                             <span
                                 className='block uppercase tracking-wide text-grey-darker text-xs font-bold mb-2'>Data</span>
-                            <ul className='m-0 mt-2 list-reset text-grey-dark'>
-                                <li className='text-md mb-2 cursor-pointer'>
+                                <ul className='m-0 mt-2 list-reset text-grey-dark'>
+                                    <li className='text-md mb-2 cursor-pointer'>
                                         <span className='no-underline flex items-center'
                                               onClick={_ => this.handleModelSelectionChange(SelectedDataType.DOMAINS)}>
                                             <MdLocalOffer/>
                                             <span className='ml-2'>Domains</span>
                                         </span>
-                                </li>
-                                <li className='text-md mb-2 cursor-pointer'>
+                                    </li>
+                                    <li className='text-md mb-2 cursor-pointer'>
                                         <span className='no-underline flex items-center'
                                               onClick={_ => this.createEntity('entity_1')}>
                                             <MdLayers/>
                                             <span className='ml-2'>Add entity</span>
                                         </span>
-                                </li>
-                            </ul>
-                        </div>
-                        <div className='mt-6 px-6'>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div className='mt-6 px-6'>
                             <span
                                 className='block uppercase tracking-wide text-grey-darker text-xs font-bold mb-2'>Navigation</span>
-                            <ul className='m-0 mt-2 list-reset text-grey-dark'>
-                                <li className='text-md mb-2 cursor-pointer'>
+                                <ul className='m-0 mt-2 list-reset text-grey-dark'>
+                                    <li className='text-md mb-2 cursor-pointer'>
                                         <span className='no-underline flex items-center'
                                               onClick={navigateToHome}>
                                             <MdLabel/>
                                             <span className='ml-2'>Back to home</span>
                                         </span>
-                                </li>
-                            </ul>
-                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>}
                     </div>
 
                     <div id="diagram-window" className="pl-2 pt-4 flex-grow flex flex-col relative"
