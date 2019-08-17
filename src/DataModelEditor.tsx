@@ -335,7 +335,7 @@ export class DataModelEditor extends Component<IProps, IState> {
                         </div>
                     </div>
 
-                    <div id="diagram-window" className="pl-2 flex-grow flex flex-col relative"
+                    <div id="diagram-window" className="pl-2 pt-4 flex-grow flex flex-col relative"
                          onClick={_ => this.handleModelSelectionChange(SelectedDataType.NONE, undefined)}>
                         <ToastContainer autoClose={3000}/>
 
