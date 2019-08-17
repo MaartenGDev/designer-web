@@ -28,23 +28,25 @@ const getAsJson = (model: any): IModel => {
     const entityObjectKey = isPhysicalDiagram ? 'o:Table' : 'o:Entity';
 
     const entities = rootModel.hasOwnProperty(entitiesKey)
-        ? rootModel[entitiesKey][0][entityObjectKey]
+        ? rootModel[entitiesKey][0].hasOwnProperty(entityObjectKey) ? rootModel[entitiesKey][0][entityObjectKey] : []
         : [];
 
     const symbolKey = isPhysicalDiagram ? 'o:TableSymbol' : 'o:EntitySymbol';
     const symbolObjectKey = isPhysicalDiagram ? 'o:Table' : 'o:Entity';
 
+
     const coordinatesByEntityId = diagram.hasOwnProperty('c:Symbols')
-        ? diagram['c:Symbols'][0][symbolKey].reduce((acc: { [key: string]: IRectangleCoordinates }, symbol: any) => {
-            const [x1, y2, x2, y1] = symbol['a:Rect'][0].replace(/\(|\)/g, '').split(',').map((coordinate: string) => parseInt(coordinate));
+        ? (diagram['c:Symbols'][0].hasOwnProperty(symbolKey) ? diagram['c:Symbols'][0][symbolKey] : [])
+            .reduce((acc: { [key: string]: IRectangleCoordinates }, symbol: any) => {
+                const [x1, y2, x2, y1] = symbol['a:Rect'][0].replace(/\(|\)/g, '').split(',').map((coordinate: string) => parseInt(coordinate));
 
-            acc[symbol['c:Object'][0][symbolObjectKey][0]['$'].Ref] = {
-                topLeft: {x: x1, y: y1},
-                bottomRight: {x: x2, y: y2}
-            };
+                acc[symbol['c:Object'][0][symbolObjectKey][0]['$'].Ref] = {
+                    topLeft: {x: x1, y: y1},
+                    bottomRight: {x: x2, y: y2}
+                };
 
-            return acc;
-        }, {})
+                return acc;
+            }, {})
         : {};
 
 

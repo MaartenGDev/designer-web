@@ -326,7 +326,10 @@ class DataModel {
         const entities = this.findNode('c:Entities');
         const entity = this.findEntity(entityId);
 
-        const relatedRelationIds = (Array.from(this.findNode('c:Relationships').childNodes).filter(node => {
+        const relationshipsNode = this.findNode('c:Relationships');
+        const relationshipNodes = relationshipsNode === undefined ? [] : Array.from(this.findNode('c:Relationships').childNodes);
+
+        const relatedRelationIds = (relationshipNodes.filter(node => {
             if(node.nodeName !== 'o:Relationship') return false;
 
             const fromRef = this.getRefOfObjectInRelation((node as HTMLElement).getAttribute('Id')!, 'c:Object1');
