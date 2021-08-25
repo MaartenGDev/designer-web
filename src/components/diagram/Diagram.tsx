@@ -20,6 +20,13 @@ interface IProps {
     onRelationClicked: (relation: IRelation) => void
 }
 
+type ConnectionObjectType = {
+    [key: string]: {
+        relationId: string,
+        ref: string
+    } []
+};
+
 class Diagram extends Component<IProps> {
     private diagram: any;
 
@@ -30,6 +37,7 @@ class Diagram extends Component<IProps> {
 
     async componentWillReceiveProps(nextProps: Readonly<IProps>, nextContext: any) {
         if (this.props.model === nextProps.model) return;
+
         await this.resetDiagram();
         this.loadDiagramWithData(nextProps);
     }
@@ -51,8 +59,8 @@ class Diagram extends Component<IProps> {
                 });
 
                 instance.bind('click', (conn: Connection, ev) => {
-                    const parameters = (conn as any).getParameters();
-                    const relation = this.props.model.relations.find(x => x.id === parameters.relationId)!;
+                    const parameters = (conn as any).getParameters(),
+                        relation = this.props.model.relations.find(x => x.id === parameters.relationId)!;
 
                     ev.stopPropagation();
                     this.props.onRelationClicked(relation);
@@ -67,16 +75,20 @@ class Diagram extends Component<IProps> {
         const {model, scaling, onEntityMoved, onRelationCreated} = props
 
         this.diagram.batch(() => {
-            const connections: { [key: string]: {relationId: string, ref: string}[] } = model.relations.reduce((acc: { [key: string]: {relationId: string, ref: string}[] }, cur) => {
+            const connections: ConnectionObjectType = model.relations.reduce((acc: ConnectionObjectType, cur) => {
                 if (!acc.hasOwnProperty(cur.from.ref)) {
                     acc[cur.from.ref] = [];
                 }
 
-                acc[cur.from.ref] = [...acc[cur.from.ref], {relationId: cur.id, ref: cur.to.ref}];
+                acc[cur.from.ref] = [...acc[cur.from.ref], {
+                    relationId: cur.id,
+                    ref: cur.to.ref
+                }];
                 return acc;
             }, {});
 
             const entityElements = document.querySelectorAll('.editor .entity');
+
             let pendingRelations: {[key: string]: boolean} = {};
 
             Object.keys(connections).forEach((sourceId: string) => {
@@ -84,24 +96,23 @@ class Diagram extends Component<IProps> {
                     const connected = connections[sourceId];
 
                     connected.forEach((target: {relationId: string, ref: string}, index) => {
-                        const sourceElem = document.querySelector('.entity-' + sourceId)!;
-                        const targetElem = document.querySelector('.entity-' + target.ref)!;
-                        const connectionsToSameEntity = connected.filter(id => id.ref === target.ref).length;
-                        const matchIndex = index - connected.findIndex(x => x.ref === target.ref);
+                        const sourceElem = document.querySelector('.entity-' + sourceId)!,
+                            targetElem = document.querySelector('.entity-' + target.ref)!,
+                            connectionsToSameEntity = connected.filter(id => id.ref === target.ref).length,
+                            matchIndex = index - connected.findIndex(x => x.ref === target.ref);
+
                         let direction = AnchorDirection.FLOW;
 
                         if (connectionsToSameEntity >= 2) {
                             direction = matchIndex === 0 ? AnchorDirection.BOTTOM : (matchIndex === 1 ? AnchorDirection.TOP : AnchorDirection.FLOW)
                         }
 
-
                         const beforeDrop = (params: any) => {
-                            const sourceEntityId = (document.querySelector(`#${params.sourceId}`) as HTMLElement).dataset.customId!;
-                            const targetEntityId = (document.querySelector(`#${params.targetId}`) as HTMLElement).dataset.customId!;
+                            const sourceEntityId = (document.querySelector(`#${params.sourceId}`) as HTMLElement).dataset.customId!,
+                                targetEntityId = (document.querySelector(`#${params.targetId}`) as HTMLElement).dataset.customId!,
+                                relationKey = sourceEntityId + targetEntityId;
 
-                            const relationKey = sourceEntityId + targetEntityId;
-
-                            if(pendingRelations.hasOwnProperty(relationKey)){
+                            if (pendingRelations.hasOwnProperty(relationKey)) {
                                 return;
                             }
 
@@ -111,12 +122,29 @@ class Diagram extends Component<IProps> {
                             return false;
                         };
 
-                        this.diagram.makeSource(sourceElem, {beforeDrop: beforeDrop, filter: '.connect-point', ...EndpointFactory.create(model, matchIndex, true)}, {anchor: EndpointFactory.getAnchorPoints(direction)});
-                        this.diagram.makeSource(targetElem, {beforeDrop: beforeDrop, filter: '.connect-point', ...EndpointFactory.create(model, matchIndex, true)}, {anchor: EndpointFactory.getAnchorPoints(direction)});
+                        this.diagram.makeSource(sourceElem, {
+                            beforeDrop: beforeDrop,
+                            filter: '.connect-point',
+                            ...EndpointFactory.create(model, matchIndex, true)
+                        }, {
+                            anchor: EndpointFactory.getAnchorPoints(direction)
+                        });
+
+                        this.diagram.makeSource(targetElem, {
+                            beforeDrop: beforeDrop,
+                            filter: '.connect-point',
+                            ...EndpointFactory.create(model, matchIndex, true)
+                        }, {
+                            anchor: EndpointFactory.getAnchorPoints(direction)
+                        });
 
                         const conn = this.diagram.connect({
-                            source: this.diagram.addEndpoint(sourceElem, EndpointFactory.create(model, matchIndex), {anchor: EndpointFactory.getAnchorPoints(direction)}),
-                            target: this.diagram.addEndpoint(targetElem, EndpointFactory.create(model, matchIndex), {anchor: EndpointFactory.getAnchorPoints(direction)}),
+                            source: this.diagram.addEndpoint(sourceElem, EndpointFactory.create(model, matchIndex), {
+                                anchor: EndpointFactory.getAnchorPoints(direction)
+                            }),
+                            target: this.diagram.addEndpoint(targetElem, EndpointFactory.create(model, matchIndex), {
+                                anchor: EndpointFactory.getAnchorPoints(direction)
+                            }),
                         });
 
                         conn.setParameter('relationId', target.relationId);
@@ -124,10 +152,10 @@ class Diagram extends Component<IProps> {
                 }
             });
 
-            let startTop = 0;
-            let finalTop = 0;
-            let startLeft = 0;
-            let finalLeft = 0;
+            let startTop = 0,
+                finalTop = 0,
+                startLeft = 0,
+                finalLeft = 0;
 
             this.diagram.draggable(entityElements, {
                 start: function(e: any){
@@ -148,10 +176,9 @@ class Diagram extends Component<IProps> {
                     finalTop = parseInt(e.el.style.top);
                     finalLeft = parseInt(e.el.style.left);
 
-                    const entity = model.entities.find(x => x.id === e.el.dataset.customId)!;
-
-                    const topDifference = Math.round((startTop - finalTop) * scaling.upScalingFactor);
-                    const leftDifference = Math.round((finalLeft - startLeft) * scaling.upScalingFactor);
+                    const entity = model.entities.find(x => x.id === e.el.dataset.customId)!,
+                        topDifference = Math.round((startTop - finalTop) * scaling.upScalingFactor),
+                        leftDifference = Math.round((finalLeft - startLeft) * scaling.upScalingFactor);
 
                     onEntityMoved(entity.id, {
                         topLeft: {
@@ -165,20 +192,23 @@ class Diagram extends Component<IProps> {
                     });
                 }
             });
-
-
         });
     }
 
     private calculateScalingFactors(model: IModel) {
-        const leftX = Math.min(...model.entities.map(entity => entity.location.topLeft.x));
-        const topY = Math.max(...model.entities.map(entity => entity.location.topLeft.y));
+        const leftX = Math.min(...model.entities.map(entity => entity.location.topLeft.x)),
+            topY = Math.max(...model.entities.map(entity => entity.location.topLeft.y));
 
         return [leftX, topY];
     }
 
     render() {
-        const {model, onModelSelectionChange, scaling} = this.props;
+        const {
+            model,
+            onModelSelectionChange,
+            scaling
+        } = this.props;
+        
         const [leftX, topY] = this.calculateScalingFactors(model);
         const topOffset = 10;
 
