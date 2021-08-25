@@ -216,6 +216,9 @@ export class DataModelEditor extends Component<IProps, IState> {
         return undefined
     };
 
+    /**
+     * TODO: remove unused method
+     */
     private downloadModel = () => {
         const data = this.dataModel.getAsXml();
 
@@ -237,23 +240,36 @@ export class DataModelEditor extends Component<IProps, IState> {
     };
 
     render() {
-        const {model, selectedDataType, selectedId, scaling, menuIsCollapsed} = this.state;
-        const {navigateToHome} = this.props
-        const hasLoadedModel = model.entities.length > 0;
+        const {
+            model,
+            selectedDataType,
+            selectedId,
+            scaling,
+            menuIsCollapsed
+        } = this.state;
 
+        const {
+            navigateToHome
+        } = this.props
+
+        // Editor View
         return (
             <div className="relative w-full">
+                {/* Edit Popup */}
                 {selectedDataType !== SelectedDataType.NONE &&
                 <div className='fixed pin-b pin-r mr-6 bg-white z-20 shadow-lg'>
+                    {/* Title */}
                     <div className='flex justify-between border-b border-grey-lighter p-4 mb-2'>
-                        <p
-                            className='uppercase tracking-wide text-grey-darker text-base font-bold'>
+                        <p className='uppercase tracking-wide text-grey-darker text-base font-bold'>
                             {selectedDataType === SelectedDataType.ENTITY && 'Edit Entity'}
                             {selectedDataType === SelectedDataType.DOMAINS && 'Edit Domains'}
                             {selectedDataType === SelectedDataType.RELATION && 'Edit Relation'}
                         </p>
+
                         <MdClose onClick={_ => this.handleModelSelectionChange(SelectedDataType.NONE, undefined)}/>
                     </div>
+
+                    {/* Body */}
                     <div className='p-2'>
                         {selectedDataType === SelectedDataType.ENTITY &&
                         <EntityEditor
@@ -293,44 +309,45 @@ export class DataModelEditor extends Component<IProps, IState> {
                     </div>
                 </div>}
 
-                <div
-                    style={{backgroundColor: '#f7f7f7'}}
-                    className="flex flex-grow items-stretch min-h-screen"
-                >
+                <div style={{backgroundColor: '#f7f7f7'}} className="flex flex-grow items-stretch min-h-screen">
+                    {/* Sidebar */}
                     <div className="border-b border-grey-lighter bg-white relative">
                         <div className='py-4 px-6 border-b border-grey-light flex justify-between items-center'>
                             {!menuIsCollapsed && <span className='text-xl font-bold m-0 text-grey-darker'>Editor</span>}
                             {!menuIsCollapsed && <MdClose className='text-xl text-grey-darker' onClick={x => this.setState({menuIsCollapsed: true})}/>}
                             {menuIsCollapsed && <MdMenu className='text-xl text-grey-darker' onClick={x => this.setState({menuIsCollapsed: false})}/>}
                         </div>
+
                         {!menuIsCollapsed && <div>
                             <div className='mt-6 px-6'>
-                            <span
-                                className='block uppercase tracking-wide text-grey-darker text-xs font-bold mb-2'>Data</span>
+                                <span className='block uppercase tracking-wide text-grey-darker text-xs font-bold mb-2'>
+                                    Data
+                                </span>
+
                                 <ul className='m-0 mt-2 list-reset text-grey-dark'>
                                     <li className='text-md mb-2 cursor-pointer'>
-                                        <span className='no-underline flex items-center'
-                                              onClick={_ => this.handleModelSelectionChange(SelectedDataType.DOMAINS)}>
+                                        <span className='no-underline flex items-center' onClick={_ => this.handleModelSelectionChange(SelectedDataType.DOMAINS)}>
                                             <MdLocalOffer/>
                                             <span className='ml-2'>Domains</span>
                                         </span>
                                     </li>
                                     <li className='text-md mb-2 cursor-pointer'>
-                                        <span className='no-underline flex items-center'
-                                              onClick={_ => this.createEntity('entity_1')}>
+                                        <span className='no-underline flex items-center' onClick={_ => this.createEntity('entity_1')}>
                                             <MdLayers/>
                                             <span className='ml-2'>Add entity</span>
                                         </span>
                                     </li>
                                 </ul>
                             </div>
+
                             <div className='mt-6 px-6'>
-                            <span
-                                className='block uppercase tracking-wide text-grey-darker text-xs font-bold mb-2'>Navigation</span>
+                                <span className='block uppercase tracking-wide text-grey-darker text-xs font-bold mb-2'>
+                                    Navigation
+                                </span>
+
                                 <ul className='m-0 mt-2 list-reset text-grey-dark'>
                                     <li className='text-md mb-2 cursor-pointer'>
-                                        <span className='no-underline flex items-center'
-                                              onClick={navigateToHome}>
+                                        <span className='no-underline flex items-center' onClick={navigateToHome}>
                                             <MdLabel/>
                                             <span className='ml-2'>Back to home</span>
                                         </span>
@@ -340,13 +357,13 @@ export class DataModelEditor extends Component<IProps, IState> {
                         </div>}
                     </div>
 
+                    {/* Diagram Container */}
                     <div id="diagram-window" className="pl-2 pt-4 flex-grow flex flex-col relative"
-                         onClick={_ => this.handleModelSelectionChange(SelectedDataType.NONE, undefined)}>
+                        onClick={_ => this.handleModelSelectionChange(SelectedDataType.NONE, undefined)}>
                         <ToastContainer autoClose={3000}/>
 
                         {model.entities.length > 0 && scaling === undefined &&
-                        <SizingRenderer model={model}
-                                        onDeterminedScale={(scaling) => this.setState({scaling})}/>
+                            <SizingRenderer model={model} onDeterminedScale={(scaling) => this.setState({scaling})}/>
                         }
 
                         {model.entities.length > 0 && scaling !== undefined

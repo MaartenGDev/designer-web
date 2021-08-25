@@ -23,6 +23,7 @@ const getLabelForIdentifier = (identifier: IEntityIdentifier | undefined) => {
 };
 
 const Entity = ({className, entity, model, onModelSelectionChange, position}: IProps) => {
+    // Entity Card
     return (
         <div key={entity.id} data-custom-id={entity.id}
              className={`entity absolute bg-white shadow ${className || ''} ${model.relations.find(x => x.from.ref === entity.id || x.to.ref === entity.id) === undefined ? '' : 'has-relations'} entity-${entity.id}`}
@@ -30,34 +31,38 @@ const Entity = ({className, entity, model, onModelSelectionChange, position}: IP
                  top: position.top,
                  left: position.left,
              }} onClick={e => {
+                e.stopPropagation();
 
-            e.stopPropagation();
-            if (!(e.currentTarget as Element).classList.contains('has-recently-been-dragged')) {
-                onModelSelectionChange(SelectedDataType.ENTITY, entity.id)
+                if (!(e.currentTarget as Element).classList.contains('has-recently-been-dragged')) {
+                    onModelSelectionChange(SelectedDataType.ENTITY, entity.id)
+                }
             }
-        }}>
+        }>
 
-            <div className='p-4 border-b border-grey-lighter relative font-bold text-grey-darker'>
-                <span className='connect-point rounded-full w-6 h-6 bg-blue text-white p-2 inline-block absolute pin-r flex justify-center items-center' style={{marginTop: '-28px', marginRight: '-12px'}}>+</span>
-                <p>{entity.name}</p>
-            </div>
-            <div className='p-4'>
-                <table className='text-sm'>
-                    <tbody>
+        <div className='p-4 border-b border-grey-lighter relative font-bold text-grey-darker'>
+            <span className='connect-point rounded-full w-6 h-6 bg-blue text-white p-2 inline-block absolute pin-r flex justify-center items-center' style={{marginTop: '-28px', marginRight: '-12px'}}>
+                +
+            </span>
+            <p>{entity.name}</p>
+        </div>
+
+        <div className='p-4'>
+            <table className='text-sm'>
+                <tbody>
                     {entity.attributes.map(attribute => {
                         const identifier = entity.identifiers.find(identifier => identifier.attributeId === attribute.id);
 
-                        return <tr key={attribute.id}
-                                   className={identifier === undefined ? '' : (identifier.isPrimary ? 'primary-identifier-row' : 'identifier-row')}>
+                        return <tr key={attribute.id} className={identifier === undefined ? '' : (identifier.isPrimary ? 'primary-identifier-row' : 'identifier-row')}>
                             <td className='pr-2'>{attribute.name}</td>
                             <td>{getLabelForIdentifier(identifier)}</td>
                             <td className='pl-2'>{attribute.domainId === undefined ? attribute.name : model.domains[attribute.domainId!].name}</td>
                         </tr>
                     })}
-                    </tbody>
-                </table>
-            </div>
+                </tbody>
+            </table>
         </div>
+    </div>
     );
 };
+
 export default Entity;

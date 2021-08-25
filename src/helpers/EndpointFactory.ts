@@ -3,78 +3,62 @@ import {AnchorDirection} from "../models/AnchorDirection";
 
 
 class EndpointFactory {
-    static getAnchorPoints(direction: AnchorDirection = AnchorDirection.FLOW) {
+    /**
+     * Get endpoint anchor points
+     * 
+     * @see https://docs.jsplumbtoolkit.com/community/current/articles/anchors.html
+     * 
+     * @param direction AnchorDirection
+     * @returns Array any
+     */
+    public static getAnchorPoints(direction: AnchorDirection = AnchorDirection.FLOW): Array<any> {
         const flowDirection = direction === AnchorDirection.TOP ? -0.2 : (direction === AnchorDirection.BOTTOM ? 0.2 : 0);
 
         return [
-            [0.2, 0, flowDirection,0,  0, 0],
-            [0.5, 0, flowDirection,0,  0, 0],
-            [0.8, 0, flowDirection,0,  0, 0],
+            [0.2, 0, flowDirection, 0, 0, 0],
+            [0.5, 0, flowDirection, 0, 0, 0],
+            [0.8, 0, flowDirection, 0, 0, 0],
 
-            [0, 0.2, flowDirection,0,  0, 0],
-            [0, 0.5, flowDirection,0,  0, 0],
-            [0, 0.8, flowDirection,0,  0, 0],
+            [0, 0.2, flowDirection, 0, 0, 0],
+            [0, 0.5, flowDirection, 0, 0, 0],
+            [0, 0.8, flowDirection, 0, 0, 0],
 
-            [1, 0.2, flowDirection, 0,0,  0],
-            [1, 0.5, flowDirection, 0,0,  0],
-            [1, 0.8, flowDirection, 0,0,  0],
+            [1, 0.2, flowDirection, 0, 0, 0],
+            [1, 0.5, flowDirection, 0, 0, 0],
+            [1, 0.8, flowDirection, 0, 0, 0],
 
-            [0.2, 1, flowDirection, 0,0,  0],
-            [0.5, 1, flowDirection, 0,0,  0],
-            [0.8, 1, flowDirection, 0,0,  0]
+            [0.2, 1, flowDirection, 0, 0, 0],
+            [0.5, 1, flowDirection, 0, 0, 0],
+            [0.8, 1, flowDirection, 0, 0, 0]
         ];
     }
-
-    private static buildCardinalityTag(component: any, model: IModel, matchIndex: number, useFrom: boolean) {
-        const {source, target} = component;
-        const sourceId = source.dataset.customId;
-        const targetId = target.dataset.customId;
-
-        const relation = model.relations.filter(x => x.from.ref === sourceId && x.to.ref === targetId)[matchIndex];
-
-        if (relation === undefined) {
-            return null;
-        }
-
-        const elem = document.createElement('div');
-        elem.classList.add('tag', 'z-10');
-        elem.innerHTML = `<p>${useFrom ? relation.from.cardinality : relation.to.cardinality}</p>`;
-        return elem;
-    }
-
-
-    private static buildRelationName(component: any, model: IModel, matchIndex: number) {
-        const {source, target} = component;
-        const sourceId = source.dataset.customId;
-        const targetId = target.dataset.customId;
-
-        const relation = model.relations.filter(x => x.from.ref === sourceId && x.to.ref === targetId)[matchIndex];
-
-        if (relation === undefined) {
-            return null;
-        }
-
-        const elem = document.createElement('div');
-        elem.classList.add('tag', 'z-10', 'hidden', 'relation-name');
-        elem.innerHTML = `<p>${relation.name}</p>`;
-        return elem;
-    }
-
-    static create(model: IModel, matchIndex: number, isPending: boolean = false): any {
+    
+    /**
+     * Create endpoint config
+     * 
+     * @see https://docs.jsplumbtoolkit.com/community/current/articles/endpoints.html
+     * 
+     * @param model IModel
+     * @param matchIndex number
+     * @param isPending boolean
+     * @returns any
+     */
+    public static create(model: IModel, matchIndex: number, isPending: boolean = false): any {
         const lineColor = '#30364c';
-        const connector = ['Bezier', {cssClass: 'connectorClass', hoverClass: 'connectorHoverClass', curviness: 100}]
+
+        const connector = ['Bezier', {cssClass: 'connectorClass', hoverClass: 'connectorHoverClass', curviness: 100}],
+            endpoint = ['Dot', {cssClass: 'endpointClass', radius: 5, hoverClass: 'endpointHoverClass'}];
+
         const connectorStyle = {
             strokeWidth: 3,
             stroke: lineColor
-        };
-        const hoverStyle = {
+        }, hoverStyle = {
             stroke: '#449999'
-        };
+        }, endpointStyle = {fill: lineColor};
+
         const overlays = isPending ? [] : [
             ['Custom', {
-                create: (component: any) => {
-                    return this.buildCardinalityTag(component, model, matchIndex,true)
-                },
+                create: (component: any) => this.buildCardinalityTag(component, model, matchIndex,true),
                 location: 0.1,
                 id: 'fromCardinalityOverlay'
             }],
@@ -89,8 +73,6 @@ class EndpointFactory {
                 id: 'relationName'
             }]
         ];
-        const endpoint = ['Dot', {cssClass: 'endpointClass', radius: 5, hoverClass: 'endpointHoverClass'}];
-        const endpointStyle = {fill: lineColor};
 
         return {
             endpoint: endpoint,
@@ -104,6 +86,63 @@ class EndpointFactory {
             connectorHoverStyle: hoverStyle,
             connectorOverlays: overlays
         };
+    }
+
+    /**
+     * Get overlay element for cardinality label
+     * 
+     * @see https://docs.jsplumbtoolkit.com/community/current/articles/overlays.html
+     * 
+     * @param component any
+     * @param model IModel
+     * @param matchIndex number
+     * @param useFrom boolean
+     * @returns HTMLDivElement | null
+     */
+    private static buildCardinalityTag(component: any, model: IModel, matchIndex: number, useFrom: boolean): HTMLDivElement | null {
+        const { source, target } = component;
+
+        const sourceId = source.dataset.customId,
+            targetId = target.dataset.customId,
+            relation = model.relations.filter(x => x.from.ref === sourceId && x.to.ref === targetId)[matchIndex];
+
+        if (relation === undefined) {
+            return null;
+        }
+
+        const elem = document.createElement('div');
+        elem.classList.add('tag', 'z-10');
+        elem.innerHTML = `<p>${useFrom ? relation.from.cardinality : relation.to.cardinality}</p>`;
+
+        return elem;
+    }
+
+    /**
+     * Get overlay element for relation label
+     * 
+     * @see https://docs.jsplumbtoolkit.com/community/current/articles/overlays.html
+     * 
+     * @param component any
+     * @param model IModel
+     * @param matchIndex number
+     * @returns HTMLDivElement | null
+     */
+    private static buildRelationName(component: any, model: IModel, matchIndex: number): HTMLDivElement | null {
+        const { source, target } = component;
+
+        const sourceId = source.dataset.customId,
+            targetId = target.dataset.customId,
+            relation = model.relations.filter(x => x.from.ref === sourceId && x.to.ref === targetId)[matchIndex];
+
+        if (relation === undefined) {
+            return null;
+        }
+
+        const elem = document.createElement('div');
+        elem.classList.add('tag', 'z-10', 'hidden', 'relation-name');
+        elem.innerHTML = `<p>${relation.name}</p>`;
+
+        return elem;
     }
 }
 

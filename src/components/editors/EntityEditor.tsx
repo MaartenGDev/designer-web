@@ -84,17 +84,19 @@ class EntityEditor extends Component<IProps, IState> {
             label: `${domain.name}(${DataTypeHelper.getLabelForDataType(domain.dataType)})`
         }));
 
+        // Entity Editor
         return (
             <div>
                 <div>
                     <label className="form__label" htmlFor="form-input-name">
                         Name
                     </label>
-                    <input
-                        className="form__input focus:outline-none focus:bg-white focus:border-grey text-sm"
+
+                    <input className="form__input focus:outline-none focus:bg-white focus:border-grey text-sm"
                         id="form-input-name" type="text" placeholder="" value={entity.name}
                         onChange={e => onEntityChange(entity.id, 'a:Name', e.target.value)}/>
                 </div>
+
                 <div className="w-full mt-6">
                     <div className='flex'>
                         <span className="form__label">
@@ -105,89 +107,91 @@ class EntityEditor extends Component<IProps, IState> {
                             Add
                         </span>
                     </div>
+
                     <table className='w-full text-left table-collapse'>
                         <tbody className='align-baseline'>
-                        <tr>
-                            <th className='table__header'>Name</th>
-                            <th className='table__header'>Type source</th>
-                            <th className='table__header'>Data type</th>
-                            <th className='table__header'>Length</th>
-                            <th className='table__header'>Identifier</th>
-                            <th className='table__header'>Remove</th>
-                        </tr>
-                        {entity.attributes.map(attribute => {
-                            const identifier = entity.identifiers.find(identifier => identifier.attributeId === attribute.id);
-
-                            return <tr key={attribute.id}>
-                                <td className='table__cell'>{attribute.name}</td>
-                                <td className='table__cell'>
-                                    <select className='form__input form__input--select'
-                                            value={dataTypeSourceByAttributeId[attribute.id]}
-                                            onChange={e => this.handleDataTypeSourceChange(attribute.id, e.target.value === DataTypeSourceType.DOMAIN.toString() ? DataTypeSourceType.DOMAIN : DataTypeSourceType.RAW_TYPE)}>
-                                        <option value={DataTypeSourceType.DOMAIN}>Domain</option>
-                                        <option value={DataTypeSourceType.RAW_TYPE}>Raw Type</option>
-                                    </select>
-                                </td>
-                                {dataTypeSourceByAttributeId[attribute.id] === DataTypeSourceType.RAW_TYPE && <>
-                                  <td className='table__cell'>
-                                    <select className='form__input form__input--select'
-                                            value={DataTypeHelper.getDataTypeWithoutLength(attribute.dataType)}
-                                            onChange={e => onEntityAttributeChange(entity.id, attribute.id, attribute.dataItemId!, e.target.value, attribute.length)}>
-                                        {Object.keys(DataTypeHelper.allTypes()).map((type: string) => <option key={type}
-                                                                                                              value={type}>{DataTypeHelper.getLabelForDataType(type)}</option>)}
-                                    </select>
-                                  </td>
-                                  <td className='p-2 border-t border-grey-light  text-xs'>
-                                    <input type='number'
-                                           className='form__input'
-                                           onChange={e => onEntityAttributeChange(entity.id, attribute.id, attribute.dataItemId!, attribute.dataType, parseInt(e.target.value, 10))}
-                                           value={attribute.length}/>
-                                  </td>
-                                </>}
-                                {dataTypeSourceByAttributeId[attribute.id] === DataTypeSourceType.DOMAIN && <>
-                                  <td className='table__cell'>
-                                    <select className='form__input form__input--select'
-                                            value={attribute.domainId}
-                                            onChange={e => onEntityAttributeDomainChange(entity.id, attribute.id, attribute.dataItemId!, e.target.value)}>
-                                        {domainOptions.map(domain => {
-                                            return <option key={domain.id} value={domain.id}>{domain.label}</option>
-                                        })}
-                                    </select>
-                                  </td>
-                                  <td className='table__cell'>
-                                    <input type='number'
-                                           className='form__input'
-                                           value={model.domains[attribute.domainId!] ? model.domains[attribute.domainId!].length : 0}
-                                           disabled={true}/>
-                                  </td>
-                                </>}
-
-                                <td className='table__cell'>
-                                    <select value={this.getEntityIdentifierChangeAction(identifier)}
-                                            className='form__input form__input--select'
-                                            onChange={e => onEntityIdentifierChange(entity.id, this.getAsEntityIdentifierChangeAction(e.target.value), attribute.id)}>
-                                        <option value={EntityIdentifierChangeAction.NONE}>None</option>
-                                        <option value={EntityIdentifierChangeAction.REGULAR}>Regular</option>
-                                        <option value={EntityIdentifierChangeAction.PRIMARY}>Primary</option>
-                                    </select>
-                                </td>
-                                <td className="table__cell">
-                                        <span className="form__label form__label--red ml-2"
-                                              onClick={e => onEntityAttributeRemoval(entity.id, attribute.id)}>Remove</span>
-                                </td>
+                            <tr>
+                                <th className='table__header'>Name</th>
+                                <th className='table__header'>Type source</th>
+                                <th className='table__header'>Data type</th>
+                                <th className='table__header'>Length</th>
+                                <th className='table__header'>Identifier</th>
+                                <th className='table__header'>Remove</th>
                             </tr>
-                        })}
+                            
+                            {entity.attributes.map(attribute => {
+                                const identifier = entity.identifiers.find(identifier => identifier.attributeId === attribute.id);
+
+                                return <tr key={attribute.id}>
+                                    <td className='table__cell'>{attribute.name}</td>
+                                    <td className='table__cell'>
+                                        <select className='form__input form__input--select'
+                                                value={dataTypeSourceByAttributeId[attribute.id]}
+                                                onChange={e => this.handleDataTypeSourceChange(attribute.id, e.target.value === DataTypeSourceType.DOMAIN.toString() ? DataTypeSourceType.DOMAIN : DataTypeSourceType.RAW_TYPE)}>
+                                            <option value={DataTypeSourceType.DOMAIN}>Domain</option>
+                                            <option value={DataTypeSourceType.RAW_TYPE}>Raw Type</option>
+                                        </select>
+                                    </td>
+
+                                    {dataTypeSourceByAttributeId[attribute.id] === DataTypeSourceType.RAW_TYPE && <>
+                                        <td className='table__cell'>
+                                            <select className='form__input form__input--select' value={DataTypeHelper.getDataTypeWithoutLength(attribute.dataType)}
+                                                onChange={e => onEntityAttributeChange(entity.id, attribute.id, attribute.dataItemId!, e.target.value, attribute.length)}>
+                                                {Object.keys(DataTypeHelper.allTypes()).map((type: string) => <option key={type} value={type}>{DataTypeHelper.getLabelForDataType(type)}</option>)}
+                                            </select>
+                                        </td>
+                                        
+                                        <td className='p-2 border-t border-grey-light  text-xs'>
+                                            <input type='number' className='form__input'
+                                                onChange={e => onEntityAttributeChange(entity.id, attribute.id, attribute.dataItemId!, attribute.dataType, parseInt(e.target.value, 10))}
+                                                value={attribute.length}/>
+                                        </td>
+                                    </>}
+
+                                    {dataTypeSourceByAttributeId[attribute.id] === DataTypeSourceType.DOMAIN && <>
+                                        <td className='table__cell'>
+                                            <select className='form__input form__input--select'
+                                                    value={attribute.domainId}
+                                                    onChange={e => onEntityAttributeDomainChange(entity.id, attribute.id, attribute.dataItemId!, e.target.value)}>
+                                                {domainOptions.map(domain => {
+                                                    return <option key={domain.id} value={domain.id}>{domain.label}</option>
+                                                })}
+                                            </select>
+                                        </td>
+                                        <td className='table__cell'>
+                                            <input type='number'
+                                                className='form__input'
+                                                value={model.domains[attribute.domainId!] ? model.domains[attribute.domainId!].length : 0}
+                                                disabled={true}/>
+                                        </td>
+                                    </>}
+
+                                    <td className='table__cell'>
+                                        <select value={this.getEntityIdentifierChangeAction(identifier)} className='form__input form__input--select'
+                                                onChange={e => onEntityIdentifierChange(entity.id, this.getAsEntityIdentifierChangeAction(e.target.value), attribute.id)}>
+                                            <option value={EntityIdentifierChangeAction.NONE}>None</option>
+                                            <option value={EntityIdentifierChangeAction.REGULAR}>Regular</option>
+                                            <option value={EntityIdentifierChangeAction.PRIMARY}>Primary</option>
+                                        </select>
+                                    </td>
+
+                                    <td className="table__cell">
+                                        <span className="form__label form__label--red ml-2" onClick={e => onEntityAttributeRemoval(entity.id, attribute.id)}>
+                                            Remove
+                                        </span>
+                                    </td>
+                                </tr>
+                            })}
                         </tbody>
                     </table>
+
                     <div className='flex mt-4'>
-                        <span
-                            className="form__label form__label--danger form__label--inline px-4 py-3 cursor-pointer rounded-sm"
+                        <span className="form__label form__label--danger form__label--inline px-4 py-3 cursor-pointer rounded-sm"
                             onClick={e => onEntityDelete(entity.id)}>
                             REMOVE
                         </span>
 
-                        <span
-                            className="form__label form__label--gray ml-2 flex-1 form__label--inline px-4 py-3 cursor-pointer rounded-sm"
+                        <span className="form__label form__label--gray ml-2 flex-1 form__label--inline px-4 py-3 cursor-pointer rounded-sm"
                             onClick={e => onDismiss()}>
                             DISMISS
                         </span>

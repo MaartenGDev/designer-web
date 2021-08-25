@@ -14,19 +14,17 @@ interface IState {
 
 class SizingRenderer extends Component<IProps, IState> {
     componentDidMount(): void {
-        const node = document.querySelector('.render-node')!;
-        const localLength = node.clientWidth;
-
-        const entity = this.props.model.entities[0];
-        const realLength = DistanceHelper.calculateLengthBetweenXCoordinates(entity.location.bottomRight.x, entity.location.topLeft.x);
+        const node = document.querySelector('.render-node')!,
+            localLength = node.clientWidth,
+            entity = this.props.model.entities[0],
+            realLength = DistanceHelper.calculateLengthBetweenXCoordinates(entity.location.bottomRight.x, entity.location.topLeft.x);
 
         this.props.onDeterminedScale({downScalingFactor: localLength / realLength, upScalingFactor: realLength / localLength});
     }
 
     render() {
-        const {model} = this.props;
-        const entity = model.entities[0];
-
+        const {model} = this.props,
+            entity = model.entities[0];
 
         return <div>
             <Entity
