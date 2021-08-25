@@ -31,6 +31,8 @@ export const App = () => {
             isDemo: true,
             isNew: false
         });
+
+        localStorage.setItem('page', 'demo');
     };
 
     const loadNew = () => {
@@ -51,7 +53,14 @@ export const App = () => {
             isDemo: false,
             isNew: false
         });
+
+        localStorage.setItem('page', 'home');
     };
+
+    // show demo page when page refreshed if landing dismissed
+    if (!modelLoadSettings.landingDismissed && localStorage.getItem('page') === 'demo'){
+        loadDemo();
+    }
 
     return <>
         {/* Landing */}
