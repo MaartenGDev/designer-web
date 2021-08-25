@@ -84,7 +84,6 @@ class EntityEditor extends Component<IProps, IState> {
             label: `${domain.name}(${DataTypeHelper.getLabelForDataType(domain.dataType)})`
         }));
 
-
         return (
             <div>
                 <div>
@@ -158,7 +157,7 @@ class EntityEditor extends Component<IProps, IState> {
                                   <td className='table__cell'>
                                     <input type='number'
                                            className='form__input'
-                                           value={model.domains[attribute.domainId!].length}
+                                           value={model.domains[attribute.domainId!] ? model.domains[attribute.domainId!].length : 0}
                                            disabled={true}/>
                                   </td>
                                 </>}
