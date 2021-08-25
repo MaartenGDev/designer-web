@@ -91,23 +91,21 @@ class DataModel {
         })
     }
 
-    public createEntity(name: string) {
+    public createEntity(name: string, itemZIndex: number) {
         const entities = this.findNode('c:Entities'),
-            symbols = this.findNode('c:ConceptualDiagrams.o:ConceptualDiagram.c:Symbols');
+            symbols = this.findNode('c:ConceptualDiagrams.o:ConceptualDiagram.c:Symbols'),
+            entityId = this.getNextUniqueId(),
+            entityNode = this.buildBasicNode('o:Entity', name, { identifierId: entityId }),
+            entitySymbolNode = this.document.createElement('o:EntitySymbol');
+            entitySymbolNode.setAttribute('Id', this.getNextUniqueId());
 
-        const entityId = this.getNextUniqueId(),
-            entityNode = this.buildBasicNode('o:Entity', name, {
-                identifierId: entityId
-            });
-
-        const entitySymbolNode = this.document.createElement('o:EntitySymbol');
-        entitySymbolNode.setAttribute('Id', this.getNextUniqueId());
+        const leftTop = 55555 - (itemZIndex * 2000);
 
         this.setAttributesOnNode(entitySymbolNode, {
             'a:CreationDate': '1556106851',
             'a:ModificationDate': '1556106851',
             'a:IconMode': '-1',
-            'a:Rect': '((34395,-5606), (53577,3759))',
+            'a:Rect': `((-${leftTop}, 0), (0, ${leftTop}))`,
             'a:LineColor': '11184640',
             'a:FillColor': '11184640',
             'a:ShadowColor': '11184640',

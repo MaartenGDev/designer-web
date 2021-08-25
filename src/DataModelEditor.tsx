@@ -35,7 +35,8 @@ interface IState {
     selectedId: string | undefined,
     scaling: Scaling | undefined,
     menuIsCollapsed: boolean,
-    selectedDataType: SelectedDataType
+    selectedDataType: SelectedDataType,
+    newItemCount: number
 }
 
 export class DataModelEditor extends Component<IProps, IState> {
@@ -52,7 +53,8 @@ export class DataModelEditor extends Component<IProps, IState> {
         menuIsCollapsed: false,
         scaling: undefined,
         selectedId: undefined,
-        selectedDataType: SelectedDataType.NONE
+        selectedDataType: SelectedDataType.NONE,
+        newItemCount: 0
     };
 
     componentDidMount(): void {
@@ -97,8 +99,12 @@ export class DataModelEditor extends Component<IProps, IState> {
         });
     };
 
-    private createEntity = (name: string) => {
-        this.dataModel.createEntity(name);
+    private createEntity = () => {
+        this.setState({
+            newItemCount: this.state.newItemCount + 1
+        });
+
+        this.dataModel.createEntity(`entity_${this.state.newItemCount}`, this.state.newItemCount);
         this.handleModelSourceChange(this.dataModel.getAsXml());
     };
 
@@ -332,7 +338,7 @@ export class DataModelEditor extends Component<IProps, IState> {
                                         </span>
                                     </li>
                                     <li className='text-md mb-2 cursor-pointer'>
-                                        <span className='no-underline flex items-center' onClick={_ => this.createEntity('entity_1')}>
+                                        <span className='no-underline flex items-center' onClick={_ => this.createEntity()}>
                                             <MdLayers/>
                                             <span className='ml-2'>Add entity</span>
                                         </span>
