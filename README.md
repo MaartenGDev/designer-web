@@ -2,7 +2,7 @@
 Parses common diagram formats and displays the web-version.
 
 ## Demo
-[Try it online](https://cdm.maartendev.me)
+[Try it online](https://datamodeling.maartendev.me)
 ### Landing
 ![Overview](./docs/landing.png)
 ### Editor
