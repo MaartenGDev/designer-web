@@ -238,8 +238,7 @@ export class DataModelEditor extends Component<IProps, IState> {
 
     render() {
         const {model, selectedDataType, selectedId, scaling, menuIsCollapsed} = this.state;
-        const {navigateToHome} = this.props
-        const hasLoadedModel = model.entities.length > 0;
+        const {navigateToHome} = this.props;
 
         return (
             <div className="relative w-full">
